@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<meta name="theme-color" content="#07040f">
+<title>NOVA RUN — jeu de plateforme néon</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%235ef0ff'/%3E%3Cstop offset='1' stop-color='%23ff5d8f'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='64' height='64' rx='14' fill='%230b0618'/%3E%3Cpath d='M14 46V18l36 28V18' fill='none' stroke='url(%23g)' stroke-width='7' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+<style>/*__CSS__*/</style>
+</head>
+<body>
+<div id="app">
+  <div id="frame">
+    <canvas id="cv" width="1280" height="720" aria-label="Zone de jeu"></canvas>
+
+    <!-- ================= HUD ================= -->
+    <div id="progress"><i id="progressFill"></i><b id="progressDot"></b></div>
+    <div id="hud" class="hidden">
+      <div class="hud-side">
+        <div class="chip" id="levelChip"><b id="hudLevelNum">01</b><span id="hudLevelName">—</span></div>
+        <div class="pill" id="timePill"><i class="dot"></i><span id="hudTime">0:00</span></div>
+      </div>
+      <div class="hud-center">
+        <div class="pill"><i class="ico-coin"></i><span id="hudCoins">0</span><em>/</em><span id="hudCoinsTotal">0</span></div>
+        <div class="pill"><i class="ico-gem"></i><span id="hudGems">0</span><em>/</em><span id="hudGemsTotal">0</span></div>
+      </div>
+      <div class="hud-side right">
+        <div class="pill ghost" id="deathPill"><i class="ico-skull"></i><span id="hudDeaths">0</span></div>
+        <button class="iconbtn" id="btnSound" aria-label="Son">♪</button>
+        <button class="iconbtn" id="btnPause" aria-label="Pause">❚❚</button>
+      </div>
+    </div>
+
+    <div id="toast" class="hidden"></div>
+
+    <!-- ================= CONTRÔLES TACTILES ================= -->
+    <div id="touch" class="hidden">
+      <div class="tpad left">
+        <button class="tbtn" data-k="left" aria-label="Gauche">◀</button>
+        <button class="tbtn" data-k="right" aria-label="Droite">▶</button>
+      </div>
+      <div class="tpad right">
+        <button class="tbtn dash" data-k="dash" aria-label="Dash">»</button>
+        <button class="tbtn jump" data-k="jump" aria-label="Saut">▲</button>
+      </div>
+    </div>
+
+    <!-- ================= ÉCRAN : MENU ================= -->
+    <section class="screen" id="scr-menu">
+      <div class="menu-wrap">
+        <div class="logo">
+          <span class="logo-nova">NOVA</span>
+          <span class="logo-run">RUN</span>
+          <span class="logo-sub">Un jeu de plateforme néon · 5 mondes</span>
+        </div>
+        <div class="menu-stats">
+          <div class="stat"><b id="menuStars">0</b><span>étoiles / 15</span></div>
+          <div class="stat"><b id="menuBest">—</b><span>meilleur temps total</span></div>
+          <div class="stat"><b id="menuGems">0</b><span>gemmes trouvées</span></div>
+        </div>
+        <div class="menu-buttons">
+          <button class="btn primary big" id="btnPlay">JOUER<small id="btnPlaySub">Nouvelle course</small></button>
+          <div class="row">
+            <button class="btn" id="btnLevels">MONDES</button>
+            <button class="btn" id="btnHow">CONTRÔLES</button>
+            <button class="btn" id="btnReset">EFFACER</button>
+          </div>
+        </div>
+        <div class="menu-foot">
+          <span class="kbd">Espace</span> ou <span class="kbd">clic</span> pour décoller · <span class="kbd">M</span> son · <span class="kbd">Échap</span> pause
+        </div>
+        <div class="howto hidden" id="howto">
+          <div class="howto-grid">
+            <div><span class="kbd">Z Q S D</span><span class="kbd">← ↑ ↓ →</span><p>Courir. <b>Bas</b> en l'air = chute rapide.</p></div>
+            <div><span class="kbd">Espace</span><span class="kbd">Z</span><p>Sauter. Appuie une 2ᵉ fois en l'air pour un <b>double saut</b>.</p></div>
+            <div><span class="kbd">Maj</span><span class="kbd">E</span><p><b>Dash</b> horizontal, une fois par saut. Idéal pour les grands gouffres.</p></div>
+            <div><span class="kbd">Mur</span><p>Colle-toi à un mur en l'air : tu glisses, puis tu peux <b>sauter de mur en mur</b>.</p></div>
+            <div><span class="kbd">P</span><span class="kbd">M</span><p>Pause · couper le son. Sur mobile, les boutons tactiles apparaissent.</p></div>
+            <div><span class="kbd">But</span><p>Traverse les 5 mondes, ramasse les pièces et franchis le <b>portail</b>.</p></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= ÉCRAN : MONDES ================= -->
+    <section class="screen hidden" id="scr-levels">
+      <div class="panel wide">
+        <header class="panel-head">
+          <h2>CHOISIS TON MONDE</h2>
+          <button class="iconbtn close" id="btnLevelsBack" aria-label="Retour">✕</button>
+        </header>
+        <div class="level-grid" id="levelGrid"></div>
+        <footer class="panel-foot"><span id="levelsSummary">0 étoile</span></footer>
+      </div>
+    </section>
+
+    <!-- ================= ÉCRAN : INTRO ================= -->
+    <section class="screen hidden" id="scr-intro">
+      <div class="intro">
+        <div class="intro-num" id="introNum">01</div>
+        <h2 id="introName">Brise Matinale</h2>
+        <p id="introSub">…</p>
+        <ul class="hints" id="introHints"></ul>
+        <button class="btn primary" id="btnStart">DÉCOLLER <span class="kbd">Espace</span></button>
+      </div>
+    </section>
+
+    <!-- ================= ÉCRAN : PAUSE ================= -->
+    <section class="screen hidden dim" id="scr-pause">
+      <div class="panel small">
+        <h2 class="title-glow">PAUSE</h2>
+        <div class="stack">
+          <button class="btn primary" id="btnResume">REPRENDRE</button>
+          <button class="btn" id="btnRestart">RECOMMENCER <span class="kbd">R</span></button>
+          <button class="btn" id="btnPauseLevels">MONDES</button>
+          <button class="btn" id="btnPauseMenu">MENU</button>
+        </div>
+        <div class="toggles">
+          <label class="switch"><input type="checkbox" id="optMusic" checked><span>Musique</span></label>
+          <label class="switch"><input type="checkbox" id="optSfx" checked><span>Effets</span></label>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= ÉCRAN : NIVEAU TERMINÉ ================= -->
+    <section class="screen hidden dim" id="scr-complete">
+      <div class="panel">
+        <div class="complete-top">
+          <div class="complete-badge" id="completeBadge">MONDE 01</div>
+          <h2>TERMINÉ !</h2>
+          <p id="completeName">—</p>
+        </div>
+        <div class="stars" id="completeStars"><span>★</span><span>★</span><span>★</span></div>
+        <div class="stats-grid">
+          <div class="stat"><b id="statTime">0:00</b><span>temps</span></div>
+          <div class="stat"><b id="statCoins">0/0</b><span>pièces</span></div>
+          <div class="stat"><b id="statGems">0/0</b><span>gemmes</span></div>
+          <div class="stat"><b id="statDeaths">0</b><span>chutes</span></div>
+        </div>
+        <div class="record hidden" id="recordBadge">NOUVEAU RECORD</div>
+        <div class="row">
+          <button class="btn primary" id="btnNext">SUIVANT <span class="kbd">Espace</span></button>
+          <button class="btn" id="btnReplay">REJOUER</button>
+          <button class="btn" id="btnCompleteLevels">MONDES</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= ÉCRAN : FIN ================= -->
+    <section class="screen hidden" id="scr-ending">
+      <div class="panel wide ending">
+        <div class="ending-glow"></div>
+        <h2 class="title-glow">L'ORAGE S'EST CALMÉ</h2>
+        <p class="ending-sub">Tu as traversé les cinq mondes. La lueur est sauve.</p>
+        <div class="stats-grid five">
+          <div class="stat"><b id="endStars">0/15</b><span>étoiles</span></div>
+          <div class="stat"><b id="endTime">0:00</b><span>temps total</span></div>
+          <div class="stat"><b id="endCoins">0</b><span>pièces</span></div>
+          <div class="stat"><b id="endGems">0</b><span>gemmes</span></div>
+          <div class="stat"><b id="endDeaths">0</b><span>chutes</span></div>
+        </div>
+        <p class="ending-quote" id="endingQuote">« Cours vite, brille fort. »</p>
+        <div class="row">
+          <button class="btn primary" id="btnEndReplay">REJOUER LE VOYAGE</button>
+          <button class="btn" id="btnEndLevels">MONDES</button>
+        </div>
+      </div>
+    </section>
+
+    <div id="rotate">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="6" y="2.5" width="12" height="19" rx="2.5"/><path d="M10 19.5h4"/>
+      </svg>
+      <b>Tourne ton téléphone</b>
+      <span>NOVA RUN se joue en écran large.</span>
+    </div>
+    <div id="loading">CHARGEMENT…</div>
+  </div>
+</div>
+<script>/*__LEVELS__*/</script>
+<script>/*__AUDIO__*/</script>
+<script>/*__GAME__*/</script>
+<script>/*__RENDER__*/</script>
+<script>/*__UI__*/</script>
+</body>
+</html>

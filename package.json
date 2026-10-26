@@ -1,0 +1,21 @@
+{
+  "name": "nova-run",
+  "version": "1.0.0",
+  "description": "Jeu de plateforme néon complet dans un seul fichier HTML : 5 mondes, double saut, dash, saut mural, musique synthétisée.",
+  "private": true,
+  "homepage": "https://github.com/<TON-PSEUDO>/nova-run",
+  "license": "MIT",
+  "scripts": {
+    "build": "python3 tools/build.py",
+    "levels": "python3 tools/gen_levels.py",
+    "validate": "node tools/validate.js",
+    "test": "node tools/test.js",
+    "test:responsive": "node tools/test-responsive.js",
+    "test:iframe": "node tools/test-iframe.js",
+    "bot": "node tools/bot.js",
+    "serve": "python3 -m http.server 8080"
+  },
+  "devDependencies": {
+    "playwright": "^1.64.1"
+  }
+}

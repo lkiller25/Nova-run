@@ -1,0 +1,15 @@
+# dépendances & caches
+node_modules/
+.cache/
+__pycache__/
+*.pyc
+.npm/
+
+# sorties de test
+shots/
+test-results/
+*.log
+
+# système
+.DS_Store
+Thumbs.db
