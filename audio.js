@@ -91,7 +91,7 @@ const Sound = (function () {
     get ready() { return ok; },
     setMusic(on) { musicOn = on; if (musicBus) musicBus.gain.value = on ? 0.22 : 0; },
     setSfx(on) { sfxOn = on; if (sfxBus) sfxBus.gain.value = on ? 0.55 : 0; },
-    setMood(m) { mood = [0, 2, -1, 3, -4][m] || 0; },
+    setMood(m) { mood = [0, 2, -1, 3, -4, 1, -2, 4][m] ?? 0; },
     jump() {
       tone({ type: 'triangle', freq: 340, slide: 640, dur: 0.13, vol: 0.22 });
       noise({ dur: 0.06, vol: 0.05, filter: 'highpass', freq: 2400 });
