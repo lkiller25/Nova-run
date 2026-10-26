@@ -14,7 +14,9 @@ const UI = (function () {
 
   let save = {
     unlocked: 1, lastIdx: 0, best: {}, music: true, sfx: true, muted: false,
+    skin: 'nova',
   };
+  const maxStars = () => LEVELS.length * 3;
   let els = {};
   let touch = { left: false, right: false, jump: false, dash: false, pendingJump: false, pendingDash: false };
   const keys = {};
@@ -51,7 +53,7 @@ const UI = (function () {
 
   /* ---------------------------------------------------------- écrans */
   const SCREENS = {
-    menu: 'scr-menu', levels: 'scr-levels', intro: 'scr-intro',
+    menu: 'scr-menu', levels: 'scr-levels', skins: 'scr-skins', intro: 'scr-intro',
     pause: 'scr-pause', complete: 'scr-complete', ending: 'scr-ending',
   };
 
@@ -63,6 +65,7 @@ const UI = (function () {
     els.touch.classList.toggle('hidden', !(name === null || name === 'play' || name === 'pause') || !isTouch());
     if (name === 'menu') refreshMenu();
     if (name === 'levels') buildLevelCards();
+    if (name === 'skins') buildSkinCards();
   }
 
   function applyTheme() {
@@ -76,7 +79,9 @@ const UI = (function () {
 
   /* ---------------------------------------------------------- menu */
   function refreshMenu() {
-    els.menuStars.textContent = totalStars() + ' / 15';
+    els.menuStars.textContent = totalStars() + ' / ' + maxStars();
+    if (els.menuStarsLabel) els.menuStarsLabel.textContent = 'étoiles / ' + maxStars();
+    if (els.logoSub) els.logoSub.textContent = 'Un jeu de plateforme néon · ' + LEVELS.length + ' mondes · skins animés';
     els.menuGems.textContent = Object.values(save.best).reduce((a, b) => a + (b.gems || 0), 0);
     const done = Object.keys(save.best).length;
     let total = 0;
@@ -87,7 +92,7 @@ const UI = (function () {
     const target = save.best[next] ? Math.min(LEVELS.length - 1, next + 1) : next;
     save.lastIdx = target;
     const lv = LEVELS[target];
-    if (totalStars() === 15) {
+    if (totalStars() === maxStars()) {
       els.btnPlay.firstChild.textContent = 'REJOUER';
       els.btnPlaySub.textContent = 'Chasse aux records';
     } else if (save.unlocked > 1) {
@@ -144,8 +149,71 @@ const UI = (function () {
       els.levelGrid.appendChild(card);
     });
     const st = totalStars(), nd = Object.keys(save.best).length;
-    els.levelsSummary.textContent = st + ' étoile' + (st === 1 ? '' : 's') + ' sur 15 · ' +
-      nd + ' monde' + (nd === 1 ? '' : 's') + ' terminé' + (nd === 1 ? '' : 's');
+    els.levelsSummary.textContent = st + ' étoile' + (st === 1 ? '' : 's') + ' sur ' + maxStars() + ' · ' +
+      nd + ' monde' + (nd === 1 ? '' : 's') + ' terminé' + (nd === 1 ? '' : 's') +
+      ' · ' + LEVELS.length + ' mondes au total';
+  }
+
+  /* ---------------------------------------------------------- skins */
+  function isSkinUnlocked(sk) {
+    return sk.unlock == null || !!save.best[sk.unlock];
+  }
+
+  function buildSkinCards() {
+    els.skinGrid.innerHTML = '';
+    let owned = 0;
+    Render.SKINS.forEach(sk => {
+      const unlocked = isSkinUnlocked(sk);
+      if (unlocked) owned++;
+      const selected = save.skin === sk.id;
+      const card = document.createElement('button');
+      card.className = 'scard' + (selected ? ' selected' : '') + (unlocked ? '' : ' locked');
+      card.style.setProperty('--card-accent', sk.glow.replace(/rgba?\(([^)]+)\)/, (m, args) => {
+        const parts = args.split(',').map(s => s.trim());
+        return 'rgb(' + parts.slice(0, 3).join(',') + ')';
+      }));
+      const cv = document.createElement('canvas');
+      cv.width = 180; cv.height = 180;
+      Render.drawSkinPreview(cv, sk.id);
+      card.appendChild(cv);
+      const body = document.createElement('div');
+      body.className = 'sk-body';
+      body.innerHTML =
+        '<span class="sk-tag">' + sk.tag + '</span>' +
+        '<div class="sk-name">' + sk.name + '</div>';
+      card.appendChild(body);
+      if (selected) {
+        const eq = document.createElement('span');
+        eq.className = 'sk-equip';
+        eq.textContent = 'ÉQUIPÉ';
+        card.appendChild(eq);
+      }
+      if (!unlocked) {
+        card.disabled = true;
+        const lock = document.createElement('div');
+        lock.className = 'sk-lock';
+        lock.innerHTML =
+          '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="4" y="10" width="16" height="11" rx="2.5"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg>' +
+          '<span>Finis<br>' + LEVELS[sk.unlock].name + '</span>';
+        card.appendChild(lock);
+      }
+      card.addEventListener('click', () => {
+        if (!unlocked) {
+          toast('Termine « ' + LEVELS[sk.unlock].name + ' » pour débloquer ' + sk.name, 2600);
+          Sound.back();
+          return;
+        }
+        save.skin = sk.id;
+        Render.setSkin(sk.id);
+        writeSave();
+        Sound.ui();
+        buildSkinCards();
+      });
+      els.skinGrid.appendChild(card);
+    });
+    els.skinsSummary.textContent =
+      owned + ' skin' + (owned > 1 ? 's' : '') + ' débloqué' + (owned > 1 ? 's' : '') +
+      ' sur ' + Render.SKINS.length + ' · termine les mondes animés pour tous les avoir';
   }
 
   function drawThumb(cv, L, idx) {
@@ -272,15 +340,16 @@ const UI = (function () {
     Game.screen = 'ending';
     const vals = Object.values(save.best);
     const totTime = vals.reduce((a, b) => a + (b.time || 0), 0);
-    els.endStars.textContent = totalStars() + '/15';
+    els.endStars.textContent = totalStars() + '/' + maxStars();
     els.endTime.textContent = fmt(totTime);
     els.endCoins.textContent = vals.reduce((a, b) => a + (b.coins || 0), 0);
     els.endGems.textContent = vals.reduce((a, b) => a + (b.gems || 0), 0);
     els.endDeaths.textContent = vals.reduce((a, b) => a + (b.deaths || 0), 0);
+    if (els.endingSub) els.endingSub.textContent = 'Tu as traversé les ' + LEVELS.length + ' mondes. La lueur est sauve.';
     const quotes = [
       '« Cours vite, brille fort. »',
       '« La nuit n\'a rien vu venir. »',
-      '« Cinq mondes, une seule lueur. »',
+      '« ' + LEVELS.length + ' mondes, une seule lueur. »',
     ];
     els.endingQuote.textContent = quotes[Math.floor(Math.random() * quotes.length)];
     showScreen('ending');
@@ -335,7 +404,7 @@ const UI = (function () {
 
     if (k === 'Escape' || k === 'p') {
       if (Game.screen === 'play' || Game.screen === 'pause') { togglePause(); return; }
-      if (Game.screen === 'levels' || Game.screen === 'intro') { Sound.back(); Game.screen = 'menu'; showScreen('menu'); return; }
+      if (Game.screen === 'levels' || Game.screen === 'skins' || Game.screen === 'intro') { Sound.back(); Game.screen = 'menu'; showScreen('menu'); return; }
       if (Game.screen === 'complete') { Sound.back(); Game.screen = 'levels'; showScreen('levels'); return; }
     }
     if (k === 'r' && (Game.screen === 'play' || Game.screen === 'pause')) { restartLevel(); return; }
@@ -515,8 +584,10 @@ const UI = (function () {
   function cacheEls() {
     const ids = [
       'frame', 'hud', 'touch', 'toast', 'loading',
-      'menuStars', 'menuBest', 'menuGems', 'btnPlay', 'btnPlaySub', 'btnLevels', 'btnHow', 'btnReset',
+      'menuStars', 'menuStarsLabel', 'menuBest', 'menuGems', 'btnPlay', 'btnPlaySub',
+      'btnLevels', 'btnSkins', 'btnHow', 'btnReset', 'logoSub',
       'howto', 'btnSound', 'btnPause', 'levelGrid', 'levelsSummary', 'btnLevelsBack',
+      'skinGrid', 'skinsSummary', 'btnSkinsBack', 'endingSub',
       'introNum', 'introName', 'introSub', 'introHints', 'btnStart',
       'btnResume', 'btnRestart', 'btnPauseLevels', 'btnPauseMenu', 'optMusic', 'optSfx',
       'completeBadge', 'completeName', 'completeStars', 'statTime', 'statCoins', 'statGems', 'statDeaths',
@@ -524,7 +595,7 @@ const UI = (function () {
       'endStars', 'endTime', 'endCoins', 'endGems', 'endDeaths', 'endingQuote', 'btnEndReplay', 'btnEndLevels',
       'hudLevelNum', 'hudLevelName', 'hudTime', 'hudCoins', 'hudCoinsTotal', 'hudGems', 'hudGemsTotal',
       'hudDeaths', 'timePill', 'deathPill', 'progress', 'progressFill', 'progressDot',
-      'scr-menu', 'scr-levels', 'scr-intro', 'scr-pause', 'scr-complete', 'scr-ending',
+      'scr-menu', 'scr-levels', 'scr-skins', 'scr-intro', 'scr-pause', 'scr-complete', 'scr-ending',
     ];
     ids.forEach(id => { els[id] = document.getElementById(id); });
     els.levelChip = document.getElementById('levelChip');
@@ -533,6 +604,8 @@ const UI = (function () {
   function bind() {
     els.btnPlay.addEventListener('click', () => { Sound.unlock(); Sound.ui(); startLevelIntro(save.lastIdx); });
     els.btnLevels.addEventListener('click', () => { Sound.unlock(); Sound.ui(); Game.screen = 'levels'; showScreen('levels'); });
+    els.btnSkins.addEventListener('click', () => { Sound.unlock(); Sound.ui(); Game.screen = 'skins'; showScreen('skins'); });
+    els.btnSkinsBack.addEventListener('click', () => { Sound.back(); Game.screen = 'menu'; showScreen('menu'); });
     els.btnHow.addEventListener('click', () => { Sound.ui(); els.howto.classList.toggle('hidden'); });
     els.btnReset.addEventListener('click', () => {
       if (!resetArmed) {
@@ -542,8 +615,9 @@ const UI = (function () {
         setTimeout(() => { resetArmed = false; els.btnReset.textContent = 'EFFACER'; els.btnReset.classList.remove('danger'); }, 3200);
         Sound.ui();
       } else {
-        save = { unlocked: 1, lastIdx: 0, best: {}, music: save.music, sfx: save.sfx, muted: save.muted };
+        save = { unlocked: 1, lastIdx: 0, best: {}, music: save.music, sfx: save.sfx, muted: save.muted, skin: 'nova' };
         writeSave();
+        Render.setSkin('nova');
         refreshMenu(); buildLevelCards();
         els.btnReset.textContent = 'EFFACER'; els.btnReset.classList.remove('danger'); resetArmed = false;
         Sound.back();
@@ -600,6 +674,7 @@ const UI = (function () {
     resizeUi();
     Render.init();
     bind();
+    Render.setSkin(save.skin || 'nova');
     Sound.setMusic(save.music && !save.muted);
     Sound.setSfx(save.sfx && !save.muted);
     els.btnSound.classList.toggle('off', save.muted);

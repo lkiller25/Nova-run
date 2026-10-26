@@ -144,6 +144,32 @@ THEMES = {
         "far": "#2a0f3d", "mid": "#1b0829", "near": "#0d0417",
         "ground": "#160722", "groundTop": "#ff5ce1", "deco": "#43165c",
         "sun": "#ffd9f4", "star": True, "ambient": "#e05cff", "ui": "#ff5ce1",
+        "weather": "storm",
+    },
+    # ---- mondes animés ----
+    "grandline": {
+        "sky": ["#04101f", "#072a4a", "#0e5a7a", "#1f9fb8"],
+        "accent": "#ffd24a", "accent2": "#ff5d5d", "glow": "#fff0b0",
+        "far": "#0a2a40", "mid": "#072033", "near": "#03101c",
+        "ground": "#061a28", "groundTop": "#ffd24a", "deco": "#0d3a52",
+        "sun": "#fff3c0", "star": False, "ambient": "#3fd0e0", "ui": "#ffd24a",
+        "weather": "rain", "skyline": "sea",
+    },
+    "lugnica": {
+        "sky": ["#0b0820", "#1d1440", "#3a2a6b", "#7a6ab0"],
+        "accent": "#c9b8ff", "accent2": "#8fd8ff", "glow": "#f0eaff",
+        "far": "#1a1238", "mid": "#120c28", "near": "#08051a",
+        "ground": "#100a26", "groundTop": "#c9b8ff", "deco": "#2a1f52",
+        "sun": "#f2f0ff", "star": True, "ambient": "#a898ff", "ui": "#c9b8ff",
+        "weather": "snow", "skyline": "castle",
+    },
+    "tournoi": {
+        "sky": ["#12040a", "#2e0a1c", "#6b1430", "#d05a2a"],
+        "accent": "#ff7a3d", "accent2": "#ffd24a", "glow": "#ffe0b0",
+        "far": "#33101e", "mid": "#220a14", "near": "#120408",
+        "ground": "#1c0710", "groundTop": "#ff7a3d", "deco": "#4a1626",
+        "sun": "#ffe8c0", "star": True, "ambient": "#ff8a5a", "ui": "#ff9a5d",
+        "weather": "storm", "skyline": "torii",
     },
 }
 
@@ -341,13 +367,180 @@ l.walker(156, 15); l.flyer(162, 9, 4, 1.4); l.hopper(168, 15)
 l.the_goal(175, 15)
 levels.append(l)
 
+# ============================================================ N6 — GRAND LINE (One Piece : mer, radeaux, mâts)
+l = Lvl("Grand Line", "La mer des pirates : le trésor t'attend au bout des vagues.", 172, 115, THEMES["grandline"],
+        ["Les radeaux mobiles ont un rythme : lis-le avant de sauter",
+         "Les mâts se grimpent en sautant de mur en mur",
+         "Dash en l'air pour franchir les grandes vagues"])
+l.start = (3, 15)
+l.ground(0, 12); l.ground(20, 38); l.ground(46, 58); l.ground(66, 84); l.ground(92, 110)
+l.ground(118, 126); l.ground(142, 171)
+l.box(-1, 0, 1, 15); l.box(172, 0, 2, 15)
+# plage de départ
+l.coin_row(4, 7, 13); l.walker(9, 15)
+l.coin_arc(13, 4, 13.2, 1.4)
+# premier rivage
+l.checkpoint(22); l.coin_row(21, 24, 13); l.walker(26, 15)
+l.spike(30, 14, 2); l.coin_row(30, 31, 11.8); l.hopper(35, 15)
+# radeau mobile
+l.mover(39, 13, 3, "x", 4, 80); l.coin_arc(39, 5, 11.6, 1.7)
+# mâts (puits de wall-jump)
+l.box(47, 6, 1, 7); l.box(53, 6, 1, 7)
+l.plat(48, 11, 2); l.plat(51, 9, 2)
+l.coin_row(48, 52, 12); l.coin(50, 9.5); l.gem(50, 6.4)
+l.plat(54, 6, 3); l.plat(57, 9, 3); l.plat(61, 11, 3)
+l.coin_row(54, 56, 4.8); l.coin_row(57, 58, 7.8); l.coin_row(61, 62, 9.8)
+l.checkpoint(56)
+# deuxième rivage
+l.coin_row(67, 70, 13); l.checkpoint(70); l.walker(72, 15)
+l.spike(76, 14, 3); l.coin_row(76, 78, 11.8); l.hopper(81, 15)
+# éboulis au-dessus des vagues
+l.crumble(85, 12, 2); l.crumble(88, 10, 2)
+l.coin(85, 10.8); l.coin(86, 10.8); l.coin(88, 8.8); l.coin(89, 8.8); l.gem(89, 7.2)
+# grande plage : ressort-canon
+l.spring(94); l.plat(96, 8, 4); l.coin_row(96, 99, 6.8); l.gem(98, 5.6)
+l.flyer(103, 9, 3, 1.3); l.walker(106, 15); l.coin_row(103, 106, 13); l.checkpoint(104)
+# ascenseur de fortune
+l.mover(111, 13, 3, "y", 4, 75); l.coin_arc(111, 4, 10.8, 1.6)
+# îlot de ralliement
+l.coin_row(119, 122, 13); l.checkpoint(122); l.walker(120, 15)
+# nuages friables
+l.crumble(127, 12, 2); l.crumble(130, 10, 2)
+l.coin(127, 10.8); l.coin(128, 10.8); l.coin(130, 8.8); l.coin(131, 8.8); l.gem(130, 7.0)
+# radeau mobile
+l.mover(135, 13, 3, "x", 4, 90); l.coin_arc(135, 5, 11.6, 1.7)
+# île au trésor
+l.coin_row(143, 146, 13)
+l.plat(150, 12, 3); l.plat(154, 10, 3); l.plat(158, 12, 3)
+l.coin_row(150, 151, 10.8); l.coin_row(154, 155, 8.8); l.coin_row(158, 159, 10.8)
+l.gem(155, 7.4)
+l.flyer(150, 8, 4, 1.5); l.walker(148, 15); l.hopper(160, 15)
+l.spike(164, 14, 2); l.coin_row(164, 165, 11.8)
+l.the_goal(168, 15)
+levels.append(l)
+
+# ============================================================ N7 — LUGNICA (Re:Zero : neige, ruines, blizzard)
+l = Lvl("Lugnica Enneigée", "Le royaume de glace veille sous une neige éternelle.", 178, 125, THEMES["lugnica"],
+        ["La neige cache les dalles fragiles",
+         "Enchaîne les sauts de mur dans les ruines",
+         "Les plateformes mobiles traversent le blizzard"])
+l.start = (3, 15)
+l.ground(0, 11); l.ground(19, 34); l.ground(42, 56); l.ground(64, 80); l.ground(88, 106)
+l.ground(114, 132); l.ground(140, 158); l.ground(166, 177)
+l.box(-1, 0, 1, 15); l.box(178, 0, 2, 15)
+# plaine enneigée
+l.coin_row(4, 7, 13); l.walker(9, 15)
+l.coin_arc(12, 4, 13.2, 1.4)
+# village
+l.checkpoint(21); l.coin_row(20, 23, 13); l.hopper(25, 15)
+l.spike(29, 14, 2); l.coin_row(29, 30, 11.8); l.walker(32, 15)
+# glaçons flottants
+l.crumble(35, 12, 2); l.crumble(38, 10, 2)
+l.coin(35, 10.8); l.coin(36, 10.8); l.coin(38, 8.8); l.coin(39, 8.8); l.gem(38, 7.2)
+# ruines : puits à wall-jump
+l.box(43, 6, 1, 7); l.box(49, 6, 1, 7)
+l.plat(44, 11, 2); l.plat(47, 9, 2)
+l.coin_row(44, 48, 12); l.coin(46, 9.5); l.gem(46, 6.4)
+l.plat(50, 6, 3); l.plat(53, 9, 3)
+l.coin_row(50, 52, 4.8); l.coin_row(53, 54, 7.8); l.checkpoint(54)
+# traversée en traîneau
+l.mover(57, 13, 3, "x", 4, 100); l.coin_arc(57, 5, 11.6, 1.7)
+# place du sanctuaire : ressort
+l.coin_row(65, 68, 13); l.checkpoint(68); l.spring(70); l.plat(72, 7, 4)
+l.coin_row(72, 75, 5.8); l.gem(74, 4.6)
+l.flyer(77, 9, 3, 1.2); l.walker(78, 15)
+# corniches enneigées
+l.plat(82, 12, 2); l.plat(85, 10, 2)
+l.coin_row(82, 83, 10.8); l.coin_row(85, 86, 8.8)
+# forêt givrée
+l.coin_row(89, 92, 13); l.checkpoint(90); l.walker(94, 15)
+l.spike(98, 14, 2); l.coin_row(98, 99, 11.8); l.hopper(102, 15)
+# plateforme mobile
+l.mover(107, 13, 3, "x", 4, 90); l.coin_arc(107, 5, 11.6, 1.7)
+# plateau des chevaliers
+l.coin_row(115, 118, 13); l.walker(120, 15); l.checkpoint(122); l.hopper(124, 15)
+l.spike(127, 14, 3); l.coin_row(127, 129, 11.8)
+# escalier de glace friable
+l.crumble(133, 12, 2); l.crumble(136, 10, 2)
+l.coin(133, 10.8); l.coin(134, 10.8); l.coin(136, 8.8); l.coin(137, 8.8)
+# dernière place
+l.coin_row(141, 144, 13); l.walker(146, 15); l.flyer(149, 8, 4, 1.4)
+l.plat(150, 11, 3); l.plat(154, 9, 3)
+l.coin_row(150, 151, 9.8); l.coin_row(154, 155, 7.8); l.gem(155, 6.4)
+l.checkpoint(152); l.hopper(156, 15)
+# dernier saut
+l.coin_arc(159, 4, 12.4, 1.4); l.plat(162, 11, 2); l.coin_row(162, 163, 9.8)
+# ligne d'arrivée
+l.coin_row(167, 170, 13); l.walker(171, 15)
+l.the_goal(174, 15)
+levels.append(l)
+
+# ============================================================ N8 — TOURNOI DES HÉROS (final crossover, tempête)
+l = Lvl("Tournoi des Héros", "L'arène ultime : toutes les techniques, un seul vainqueur.", 188, 140, THEMES["tournoi"],
+        ["Tout est réuni : murs, ressorts, mobiles et dalles friables",
+         "Garde ton calme dans la tempête",
+         "Le portail t'attend au bout de l'arène"])
+l.start = (3, 15)
+l.ground(0, 10); l.ground(18, 34); l.ground(42, 54); l.ground(62, 78); l.ground(86, 102)
+l.ground(110, 116); l.ground(129, 154); l.ground(162, 187)
+l.box(-1, 0, 1, 15); l.box(188, 0, 2, 15)
+# entrée de l'arène
+l.coin_row(3, 6, 13); l.flyer(8, 9, 3, 1.4)
+l.coin_arc(11, 4, 13.2, 1.4)
+# tour d'escalade (wall jump)
+l.box(20, 4, 1, 8); l.box(26, 4, 1, 8)
+l.plat(21, 10, 2); l.plat(24, 8, 2)
+l.coin_row(21, 25, 11); l.coin(23, 8.5); l.gem(23, 5.4)
+l.plat(27, 4, 3); l.plat(30, 7, 3)
+l.coin_row(27, 29, 3.8); l.coin_row(30, 31, 6.8); l.checkpoint(31); l.walker(33, 15)
+# passerelle mobile
+l.mover(35, 13, 3, "x", 4, 110); l.coin_arc(35, 5, 11.6, 1.7)
+# ring des piques
+l.coin_row(43, 46, 13); l.checkpoint(45); l.spike(48, 14, 3); l.coin_row(48, 50, 11.8); l.hopper(52, 15)
+# nuages de combat
+l.crumble(55, 12, 2); l.crumble(58, 10, 2)
+l.coin(55, 10.8); l.coin(56, 10.8); l.coin(58, 8.8); l.coin(59, 8.8)
+# ressort du champion
+l.spring(64); l.plat(66, 8, 4); l.coin_row(66, 69, 6.8); l.gem(68, 5.8)
+l.plat(70, 11, 3); l.plat(74, 9, 3); l.coin_row(70, 71, 9.8); l.coin_row(74, 75, 7.8)
+l.flyer(72, 8, 3, 1.5); l.checkpoint(70); l.walker(76, 15)
+# ascenseur vertical
+l.mover(79, 13, 3, "y", 4, 75); l.coin_arc(79, 4, 10.8, 1.6)
+# seconde arène
+l.coin_row(87, 90, 13); l.walker(92, 15); l.checkpoint(94); l.spike(96, 14, 2)
+l.coin_row(96, 97, 11.8); l.hopper(100, 15)
+# corniches
+l.plat(103, 12, 2); l.plat(106, 10, 2); l.coin_row(103, 104, 10.8); l.coin_row(106, 107, 8.8)
+# îlot
+l.coin_row(111, 114, 13); l.checkpoint(112); l.walker(113, 15)
+# grand pont friable
+l.crumble(117, 12, 2); l.crumble(120, 10, 2); l.crumble(123, 12, 2); l.crumble(126, 10, 2)
+l.coin(117, 10.8); l.coin(118, 10.8); l.coin(120, 8.8); l.coin(121, 8.8)
+l.coin(123, 10.8); l.coin(124, 10.8); l.coin(126, 8.8); l.coin(127, 8.8); l.gem(121, 7.0)
+# reprise
+l.coin_row(130, 133, 13); l.hopper(136, 15); l.spike(140, 14, 3); l.coin_row(140, 142, 11.8)
+l.plat(144, 11, 3); l.plat(148, 9, 3); l.coin_row(144, 145, 9.8); l.coin_row(148, 149, 7.8); l.gem(149, 6.4)
+l.flyer(145, 9, 4, 1.6); l.walker(148, 15); l.checkpoint(151)
+# radeau des cimes
+l.mover(155, 13, 3, "x", 4, 100); l.coin_arc(155, 5, 11.6, 1.7)
+# dernière ligne droite
+l.coin_row(163, 166, 13); l.plat(168, 12, 3); l.plat(172, 10, 3)
+l.coin_row(168, 169, 10.8); l.coin_row(172, 173, 8.8)
+l.hopper(170, 15); l.walker(176, 15); l.spike(179, 14, 2)
+l.the_goal(183, 15)
+levels.append(l)
+
 # ============================================================ EXPORT
+# le dépôt existe aussi en version aplatie (fichiers à la racine) : on écrit
+# dans src/ s'il existe, sinon à la racine
+OUT_DIR = "src" if os.path.isdir("src") else "."
+MAPS_PATH = os.path.join("tools", "maps.txt") if os.path.isdir("tools") else "maps.txt"
 out = "const LEVELS = " + json.dumps([lv.to_dict(i) for i, lv in enumerate(levels)], ensure_ascii=False) + ";\n"
-os.makedirs("src", exist_ok=True)
-with open("src/levels.js", "w", encoding="utf-8") as f:
+os.makedirs(OUT_DIR, exist_ok=True)
+with open(os.path.join(OUT_DIR, "levels.js"), "w", encoding="utf-8") as f:
     f.write("/* NOVA RUN — niveaux générés par tools/gen_levels.py */\n" + out)
 
-with open("tools/maps.txt", "w", encoding="utf-8") as f:
+with open(MAPS_PATH, "w", encoding="utf-8") as f:
     for i, lv in enumerate(levels):
         f.write("\n=== N%d %s (%d tuiles) ===\n" % (i + 1, lv.name, lv.width_tiles))
         f.write(lv.ascii() + "\n")

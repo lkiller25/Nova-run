@@ -51,10 +51,10 @@
         <div class="logo">
           <span class="logo-nova">NOVA</span>
           <span class="logo-run">RUN</span>
-          <span class="logo-sub">Un jeu de plateforme néon · 5 mondes</span>
+          <span class="logo-sub" id="logoSub">Un jeu de plateforme néon · 8 mondes · skins animés</span>
         </div>
         <div class="menu-stats">
-          <div class="stat"><b id="menuStars">0</b><span>étoiles / 15</span></div>
+          <div class="stat"><b id="menuStars">0</b><span id="menuStarsLabel">étoiles / 24</span></div>
           <div class="stat"><b id="menuBest">—</b><span>meilleur temps total</span></div>
           <div class="stat"><b id="menuGems">0</b><span>gemmes trouvées</span></div>
         </div>
@@ -62,6 +62,7 @@
           <button class="btn primary big" id="btnPlay">JOUER<small id="btnPlaySub">Nouvelle course</small></button>
           <div class="row">
             <button class="btn" id="btnLevels">MONDES</button>
+            <button class="btn" id="btnSkins">SKINS</button>
             <button class="btn" id="btnHow">CONTRÔLES</button>
             <button class="btn" id="btnReset">EFFACER</button>
           </div>
@@ -76,7 +77,7 @@
             <div><span class="kbd">Maj</span><span class="kbd">E</span><p><b>Dash</b> horizontal, une fois par saut. Idéal pour les grands gouffres.</p></div>
             <div><span class="kbd">Mur</span><p>Colle-toi à un mur en l'air : tu glisses, puis tu peux <b>sauter de mur en mur</b>.</p></div>
             <div><span class="kbd">P</span><span class="kbd">M</span><p>Pause · couper le son. Sur mobile, les boutons tactiles apparaissent.</p></div>
-            <div><span class="kbd">But</span><p>Traverse les 5 mondes, ramasse les pièces et franchis le <b>portail</b>.</p></div>
+            <div><span class="kbd">But</span><p>Traverse les 8 mondes, ramasse les pièces et franchis le <b>portail</b>.</p></div>
           </div>
         </div>
       </div>
@@ -91,6 +92,18 @@
         </header>
         <div class="level-grid" id="levelGrid"></div>
         <footer class="panel-foot"><span id="levelsSummary">0 étoile</span></footer>
+      </div>
+    </section>
+
+    <!-- ================= ÉCRAN : SKINS ================= -->
+    <section class="screen hidden" id="scr-skins">
+      <div class="panel wide">
+        <header class="panel-head">
+          <h2>CHOISIS TON SKIN</h2>
+          <button class="iconbtn close" id="btnSkinsBack" aria-label="Retour">✕</button>
+        </header>
+        <div class="skin-grid" id="skinGrid"></div>
+        <footer class="panel-foot"><span id="skinsSummary">Termine les mondes animés pour tout débloquer</span></footer>
       </div>
     </section>
 
@@ -151,9 +164,9 @@
       <div class="panel wide ending">
         <div class="ending-glow"></div>
         <h2 class="title-glow">L'ORAGE S'EST CALMÉ</h2>
-        <p class="ending-sub">Tu as traversé les cinq mondes. La lueur est sauve.</p>
+        <p class="ending-sub" id="endingSub">Tu as traversé les huit mondes. La lueur est sauve.</p>
         <div class="stats-grid five">
-          <div class="stat"><b id="endStars">0/15</b><span>étoiles</span></div>
+          <div class="stat"><b id="endStars">0/24</b><span>étoiles</span></div>
           <div class="stat"><b id="endTime">0:00</b><span>temps total</span></div>
           <div class="stat"><b id="endCoins">0</b><span>pièces</span></div>
           <div class="stat"><b id="endGems">0</b><span>gemmes</span></div>

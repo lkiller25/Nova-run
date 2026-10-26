@@ -3,7 +3,8 @@
 """Assemble index.html : un seul fichier autonome, sans dépendance réseau."""
 import os, re, datetime
 
-SRC = 'src'
+# le dépôt existe en version aplatie (fichiers à la racine) et en version src/
+SRC = 'src' if os.path.isdir('src') else '.'
 OUT = 'nova-run.html'
 OUT_INDEX = 'index.html'   # même fichier, pour que GitHub Pages serve le jeu directement
 

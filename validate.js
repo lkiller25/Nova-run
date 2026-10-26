@@ -1,7 +1,8 @@
 #!/usr/bin/env node
 /* Valide la géométrie des niveaux : objets dans le décor, cheminements impossibles, etc. */
 const fs = require('fs');
-const src = fs.readFileSync('src/levels.js', 'utf8');
+const levelsPath = fs.existsSync('src/levels.js') ? 'src/levels.js' : 'levels.js';
+const src = fs.readFileSync(levelsPath, 'utf8');
 const LEVELS = eval(src.replace('const LEVELS =', '(') .replace(/;\s*$/, ')'));
 const T = 40, VW = 1280, VH = 720;
 let errors = 0, warns = 0;

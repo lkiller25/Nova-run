@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <meta name="theme-color" content="#07040f">
 <title>NOVA RUN — jeu de plateforme néon</title>
-<!-- NOVA RUN — build 2026-10-26 22:24 — fichier autonome, aucune ressource externe -->
+<!-- NOVA RUN — build 2026-10-26 23:25 — fichier autonome, aucune ressource externe -->
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%235ef0ff'/%3E%3Cstop offset='1' stop-color='%23ff5d8f'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='64' height='64' rx='14' fill='%230b0618'/%3E%3Cpath d='M14 46V18l36 28V18' fill='none' stroke='url(%23g)' stroke-width='7' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
 <style>/* ============================================================
    NOVA RUN — habillage de l'interface
@@ -251,6 +251,39 @@ canvas#cv{ position:absolute; inset:0; width:100%; height:100%; display:block; i
 .lcard.locked{ cursor:default; }
 .lcard .lc-best{ position:absolute; top:calc(6px * var(--s)); right:calc(6px * var(--s)); font-family:var(--mono); font-size:calc(9px * var(--s)); background:rgba(5,3,12,.72); padding:calc(2px * var(--s)) calc(6px * var(--s)); border-radius:calc(6px * var(--s)); color:var(--accent); border:1px solid rgba(255,255,255,.1); }
 
+/* ============================================================ CARTES DE SKIN */
+.skin-grid{ display:flex; flex-wrap:wrap; justify-content:center; gap:calc(11px * var(--s)); }
+.skin-grid .scard{ width:calc((100% - 3 * calc(11px * var(--s))) / 4); }
+@media (max-width:820px){ .skin-grid .scard{ width:calc((100% - calc(11px * var(--s))) / 2); } }
+.scard{
+  position:relative; cursor:pointer; border-radius:calc(14px * var(--s)); overflow:hidden;
+  background:linear-gradient(180deg, rgba(22,15,42,.85), rgba(9,6,20,.95));
+  border:1px solid rgba(255,255,255,.1); transition:transform .16s, border-color .16s, box-shadow .2s;
+  text-align:left; padding:0; color:var(--ink); font-family:var(--font);
+}
+.scard:not(.locked):hover{ transform:translateY(calc(-3px * var(--s))); border-color:color-mix(in srgb, var(--card-accent, var(--accent)) 70%, transparent); box-shadow:0 calc(12px * var(--s)) calc(30px * var(--s)) -10px color-mix(in srgb, var(--card-accent, var(--accent)) 60%, transparent); }
+.scard.selected{ border-color:var(--card-accent, var(--accent)); box-shadow:0 0 calc(26px * var(--s)) -8px var(--card-accent, var(--accent)); }
+.scard canvas{ display:block; width:100%; height:calc(120px * var(--s)); }
+.scard .sk-body{ padding:calc(8px * var(--s)) calc(10px * var(--s)) calc(10px * var(--s)); display:flex; flex-direction:column; gap:calc(2px * var(--s)); }
+.scard .sk-tag{ font-family:var(--mono); font-size:calc(8.5px * var(--s)); letter-spacing:.16em; color:var(--card-accent, var(--accent)); opacity:.85; }
+.scard .sk-name{ font-size:calc(14px * var(--s)); font-weight:800; line-height:1.1; }
+.scard .sk-equip{
+  position:absolute; top:calc(7px * var(--s)); right:calc(7px * var(--s));
+  font-family:var(--mono); font-size:calc(8.5px * var(--s)); letter-spacing:.1em;
+  background:color-mix(in srgb, var(--card-accent, var(--accent)) 85%, #05030c);
+  color:#0a0714; font-weight:800; padding:calc(3px * var(--s)) calc(7px * var(--s));
+  border-radius:calc(7px * var(--s));
+}
+.scard .sk-lock{
+  position:absolute; inset:0; display:grid; place-items:center; text-align:center;
+  background:linear-gradient(180deg, rgba(6,3,14,.45), rgba(6,3,14,.82)); color:var(--dim);
+  font-size:calc(10px * var(--s)); font-weight:700; line-height:1.4; gap:calc(6px * var(--s));
+}
+.scard .sk-lock svg{ width:calc(22px * var(--s)); height:calc(22px * var(--s)); opacity:.8; }
+.scard.locked{ cursor:default; }
+.scard.locked canvas{ filter:saturate(.35) brightness(.6); }
+.scard.locked .sk-body{ opacity:.45; }
+
 /* ============================================================ INTRO */
 .intro{ text-align:center; display:flex; flex-direction:column; align-items:center; gap:calc(10px * var(--s)); max-width:calc(760px * var(--s)); }
 .intro-num{
@@ -382,10 +415,10 @@ body.portrait #rotate{ display:flex; }
         <div class="logo">
           <span class="logo-nova">NOVA</span>
           <span class="logo-run">RUN</span>
-          <span class="logo-sub">Un jeu de plateforme néon · 5 mondes</span>
+          <span class="logo-sub" id="logoSub">Un jeu de plateforme néon · 8 mondes · skins animés</span>
         </div>
         <div class="menu-stats">
-          <div class="stat"><b id="menuStars">0</b><span>étoiles / 15</span></div>
+          <div class="stat"><b id="menuStars">0</b><span id="menuStarsLabel">étoiles / 24</span></div>
           <div class="stat"><b id="menuBest">—</b><span>meilleur temps total</span></div>
           <div class="stat"><b id="menuGems">0</b><span>gemmes trouvées</span></div>
         </div>
@@ -393,6 +426,7 @@ body.portrait #rotate{ display:flex; }
           <button class="btn primary big" id="btnPlay">JOUER<small id="btnPlaySub">Nouvelle course</small></button>
           <div class="row">
             <button class="btn" id="btnLevels">MONDES</button>
+            <button class="btn" id="btnSkins">SKINS</button>
             <button class="btn" id="btnHow">CONTRÔLES</button>
             <button class="btn" id="btnReset">EFFACER</button>
           </div>
@@ -407,7 +441,7 @@ body.portrait #rotate{ display:flex; }
             <div><span class="kbd">Maj</span><span class="kbd">E</span><p><b>Dash</b> horizontal, une fois par saut. Idéal pour les grands gouffres.</p></div>
             <div><span class="kbd">Mur</span><p>Colle-toi à un mur en l'air : tu glisses, puis tu peux <b>sauter de mur en mur</b>.</p></div>
             <div><span class="kbd">P</span><span class="kbd">M</span><p>Pause · couper le son. Sur mobile, les boutons tactiles apparaissent.</p></div>
-            <div><span class="kbd">But</span><p>Traverse les 5 mondes, ramasse les pièces et franchis le <b>portail</b>.</p></div>
+            <div><span class="kbd">But</span><p>Traverse les 8 mondes, ramasse les pièces et franchis le <b>portail</b>.</p></div>
           </div>
         </div>
       </div>
@@ -422,6 +456,18 @@ body.portrait #rotate{ display:flex; }
         </header>
         <div class="level-grid" id="levelGrid"></div>
         <footer class="panel-foot"><span id="levelsSummary">0 étoile</span></footer>
+      </div>
+    </section>
+
+    <!-- ================= ÉCRAN : SKINS ================= -->
+    <section class="screen hidden" id="scr-skins">
+      <div class="panel wide">
+        <header class="panel-head">
+          <h2>CHOISIS TON SKIN</h2>
+          <button class="iconbtn close" id="btnSkinsBack" aria-label="Retour">✕</button>
+        </header>
+        <div class="skin-grid" id="skinGrid"></div>
+        <footer class="panel-foot"><span id="skinsSummary">Termine les mondes animés pour tout débloquer</span></footer>
       </div>
     </section>
 
@@ -482,9 +528,9 @@ body.portrait #rotate{ display:flex; }
       <div class="panel wide ending">
         <div class="ending-glow"></div>
         <h2 class="title-glow">L'ORAGE S'EST CALMÉ</h2>
-        <p class="ending-sub">Tu as traversé les cinq mondes. La lueur est sauve.</p>
+        <p class="ending-sub" id="endingSub">Tu as traversé les huit mondes. La lueur est sauve.</p>
         <div class="stats-grid five">
-          <div class="stat"><b id="endStars">0/15</b><span>étoiles</span></div>
+          <div class="stat"><b id="endStars">0/24</b><span>étoiles</span></div>
           <div class="stat"><b id="endTime">0:00</b><span>temps total</span></div>
           <div class="stat"><b id="endCoins">0</b><span>pièces</span></div>
           <div class="stat"><b id="endGems">0</b><span>gemmes</span></div>
@@ -509,7 +555,7 @@ body.portrait #rotate{ display:flex; }
   </div>
 </div>
 <script>/* NOVA RUN — niveaux générés par tools/gen_levels.py */
-const LEVELS = [{"id": 0, "name": "Brise Matinale", "subtitle": "Les toits dorment encore. Réveille-les.", "width": 5040, "par": 55, "theme": {"sky": ["#1b1038", "#5b2a63", "#e0765a", "#ffc178"], "accent": "#ffb26b", "accent2": "#ff5d8f", "glow": "#ffd6a0", "far": "#3a2350", "mid": "#2a1740", "near": "#150b22", "ground": "#1d1030", "groundTop": "#ffb26b", "deco": "#7a4a86", "sun": "#ffe3b0", "star": true, "ambient": "#ff9e6b", "ui": "#ffb26b"}, "hints": ["ZQSD / Flèches : courir", "Espace : sauter — appuie 2× pour un double saut", "Maj : dash (en l'air aussi)"], "start": [120, 600], "solids": [[0, 600, 1000, 120], [1120, 600, 720, 120], [2000, 600, 360, 120], [3000, 600, 760, 120], [4360, 600, 680, 120], [-40, 0, 40, 600], [5040, 0, 80, 600]], "plats": [[2400, 480, 120], [2600, 400, 120], [2800, 480, 120], [3960, 440, 120], [4120, 480, 120]], "spikes": [[3360, 576, 80, 24]], "coins": [[1020, 548], [1060, 496], [1100, 548], [1860, 548], [1900, 495], [1940, 495], [1980, 548], [2420, 452], [2460, 452], [2620, 372], [2660, 372], [2820, 452], [2860, 452], [3100, 540], [3140, 540], [3180, 540], [3220, 540], [3380, 492], [3420, 492], [3820, 452], [3860, 452], [3980, 412], [4020, 412], [4140, 452], [4180, 452], [3860, 364], [3900, 364], [4500, 540], [4540, 540], [4580, 540], [4620, 540]], "gems": [[2660, 296], [4620, 440]], "enemies": [{"t": "walker", "x": 1403, "y": 600, "w": 34, "h": 30}, {"t": "walker", "x": 1643, "y": 600, "w": 34, "h": 30}, {"t": "walker", "x": 3043, "y": 600, "w": 34, "h": 30}, {"t": "walker", "x": 3603, "y": 600, "w": 34, "h": 30}, {"t": "walker", "x": 4723, "y": 600, "w": 34, "h": 30}], "springs": [], "crumbles": [[3800, 480, 120]], "movers": [], "checkpoints": [[3500, 600]], "goal": [4860, 600]}, {"id": 1, "name": "Forêt de Néon", "subtitle": "La sève lumineuse ne pardonne pas les faux pas.", "width": 5680, "par": 70, "theme": {"sky": ["#04121a", "#062a33", "#0a4a48", "#127a63"], "accent": "#3dffc0", "accent2": "#7bff5d", "glow": "#b8ffe8", "far": "#0a2a2e", "mid": "#07201f", "near": "#03100f", "ground": "#061a17", "groundTop": "#3dffc0", "deco": "#0d3a35", "sun": "#d6fff2", "star": true, "ambient": "#26e0a0", "ui": "#3dffc0"}, "hints": ["Saute contre un mur, puis saute encore : tu grimpes", "Le double saut sauve des vies", "BAS en l'air : chute rapide"], "start": [120, 600], "solids": [[0, 600, 760, 120], [960, 600, 840, 120], [1800, 600, 280, 120], [2560, 600, 680, 120], [3880, 600, 1240, 120], [5160, 600, 520, 120], [-40, 0, 40, 600], [5680, 0, 80, 600], [1800, 240, 40, 280], [2040, 240, 40, 280]], "plats": [[800, 520, 80], [1840, 440, 80], [1960, 360, 80], [2080, 240, 160], [2280, 360, 120], [2440, 440, 120], [3320, 480, 120], [3520, 400, 120], [3720, 480, 120], [4560, 520, 120], [4720, 440, 120], [4880, 360, 120], [5240, 440, 120]], "spikes": [[1360, 576, 80, 24], [4200, 576, 80, 24]], "coins": [[780, 556], [820, 508], [860, 492], [900, 508], [940, 556], [1860, 500], [1900, 500], [1940, 500], [1980, 500], [2020, 500], [1860, 400], [2020, 400], [2100, 212], [2140, 212], [2180, 212], [2220, 212], [2300, 332], [2340, 332], [2460, 412], [2500, 412], [2660, 540], [2700, 540], [2740, 540], [2780, 540], [3340, 452], [3380, 452], [3540, 372], [3580, 372], [3740, 452], [3780, 452], [4220, 516], [4260, 516], [4580, 492], [4620, 492], [4740, 412], [4780, 412], [4900, 332], [4940, 332], [5020, 540], [5060, 540], [5100, 540], [5140, 540], [5260, 412], [5300, 412]], "gems": [[1940, 276], [3580, 316], [4940, 308]], "enemies": [{"t": "flyer", "x": 440, "y": 380, "w": 34, "h": 34, "amp": 120, "speed": 1.0}, {"t": "walker", "x": 1123, "y": 600, "w": 34, "h": 30}, {"t": "hopper", "x": 1562, "y": 600, "w": 36, "h": 33}, {"t": "walker", "x": 2883, "y": 600, "w": 34, "h": 30}, {"t": "hopper", "x": 3082, "y": 600, "w": 36, "h": 33}, {"t": "flyer", "x": 4040, "y": 380, "w": 34, "h": 34, "amp": 160, "speed": 1.2}, {"t": "hopper", "x": 5282, "y": 600, "w": 36, "h": 33}, {"t": "walker", "x": 5563, "y": 600, "w": 34, "h": 30}], "springs": [], "crumbles": [], "movers": [], "checkpoints": [[1260, 600], [2740, 600], [4340, 600]], "goal": [5460, 600]}, {"id": 2, "name": "Canyons de Verre", "subtitle": "Ressorts, plateformes mobiles et sable qui s'effrite.", "width": 6160, "par": 85, "theme": {"sky": ["#170619", "#3b0d2e", "#8b1e3f", "#e0563c"], "accent": "#ff8a3d", "accent2": "#ff3d6e", "glow": "#ffd0a0", "far": "#4a1430", "mid": "#2e0b22", "near": "#180614", "ground": "#22071c", "groundTop": "#ff8a3d", "deco": "#5c1a3a", "sun": "#ffd9a0", "star": false, "ambient": "#ff7a4a", "ui": "#ff8a3d"}, "hints": ["Les ressorts t'envoient très haut", "Les plateformes claires s'effondrent : ne traîne pas", "Maj en l'air : dash pour franchir les grands gouffres"], "start": [120, 600], "solids": [[0, 600, 600, 120], [1200, 600, 720, 120], [2600, 600, 840, 120], [4000, 600, 760, 120], [5320, 600, 840, 120], [-40, 0, 40, 600], [6160, 0, 80, 600]], "plats": [[400, 280, 160], [4840, 480, 120], [5000, 400, 120], [5160, 480, 120]], "spikes": [[1560, 576, 120, 24], [3240, 576, 80, 24], [4560, 576, 120, 24]], "coins": [[420, 252], [460, 252], [500, 252], [540, 252], [180, 540], [220, 540], [260, 540], [300, 540], [660, 508], [700, 482], [740, 460], [780, 445], [820, 434], [860, 429], [900, 429], [940, 434], [980, 445], [1020, 460], [1060, 482], [1100, 508], [1260, 540], [1300, 540], [1340, 540], [1380, 540], [1580, 492], [1620, 492], [1660, 492], [1980, 452], [2020, 452], [2180, 412], [2220, 412], [2380, 452], [2420, 452], [2700, 540], [2740, 540], [2780, 540], [2820, 540], [3540, 348], [3580, 313], [3620, 287], [3660, 267], [3700, 256], [3740, 252], [3780, 256], [3820, 267], [3860, 287], [3900, 313], [3940, 348], [4100, 540], [4140, 540], [4180, 540], [4220, 540], [4580, 492], [4620, 492], [4660, 492], [4860, 452], [4900, 452], [5020, 372], [5060, 372], [5180, 452], [5220, 452]], "gems": [[500, 204], [2260, 348], [5060, 308]], "enemies": [{"t": "walker", "x": 1443, "y": 600, "w": 34, "h": 30}, {"t": "hopper", "x": 1802, "y": 600, "w": 36, "h": 33}, {"t": "hopper", "x": 2922, "y": 600, "w": 36, "h": 33}, {"t": "walker", "x": 3123, "y": 600, "w": 34, "h": 30}, {"t": "walker", "x": 4403, "y": 600, "w": 34, "h": 30}, {"t": "walker", "x": 5563, "y": 600, "w": 34, "h": 30}, {"t": "hopper", "x": 5762, "y": 600, "w": 36, "h": 33}], "springs": [[362, 585, 36, 15]], "crumbles": [[1960, 480, 120], [2160, 440, 120], [2360, 480, 120]], "movers": [[680, 520, 120, "x", 360, 80, 0], [3520, 520, 120, "y", 160, 65, 0], [3720, 400, 120, "x", 200, 80, 0]], "checkpoints": [[1340, 600], [2780, 600], [4300, 600]], "goal": [5900, 600]}, {"id": 3, "name": "Glace Électrique", "subtitle": "Un faux pas et tu glisses vers l'infini.", "width": 6640, "par": 100, "theme": {"sky": ["#04081f", "#0a1a44", "#123a6b", "#2f8fbf"], "accent": "#5cd8ff", "accent2": "#a08cff", "glow": "#d8f6ff", "far": "#0d2150", "mid": "#081634", "near": "#040a1d", "ground": "#081428", "groundTop": "#5cd8ff", "deco": "#123a63", "sun": "#e8f8ff", "star": true, "ambient": "#5cd8ff", "ui": "#7fe4ff"}, "hints": ["Les murs de glace sont tes alliés", "Enchaîne saut + dash pour aller plus loin", "Chute rapide : BAS en l'air"], "start": [120, 600], "solids": [[0, 600, 520, 120], [840, 600, 960, 120], [2200, 600, 480, 120], [3720, 600, 640, 120], [5120, 600, 680, 120], [6160, 600, 480, 120], [-40, 0, 40, 600], [6640, 0, 80, 600], [1360, 240, 40, 280], [1600, 240, 40, 280]], "plats": [[560, 480, 80], [720, 400, 80], [1400, 440, 80], [1520, 360, 80], [1640, 240, 160], [1880, 360, 120], [2040, 440, 120], [5840, 480, 120], [6000, 400, 120]], "spikes": [[320, 576, 80, 24], [2400, 576, 120, 24], [4240, 576, 80, 24], [5640, 576, 120, 24]], "coins": [[340, 508], [380, 508], [580, 452], [740, 372], [940, 540], [980, 540], [1020, 540], [1060, 540], [1420, 500], [1460, 500], [1500, 500], [1540, 500], [1580, 500], [1500, 400], [1660, 212], [1700, 212], [1740, 212], [1780, 212], [1900, 332], [1940, 332], [2060, 412], [2100, 412], [2420, 492], [2460, 492], [2500, 492], [2820, 436], [2860, 414], [2900, 395], [2940, 380], [2980, 367], [3020, 358], [3060, 352], [3100, 348], [3140, 348], [3180, 352], [3220, 358], [3260, 367], [3300, 380], [3340, 395], [3380, 414], [3420, 436], [3780, 540], [3820, 540], [3860, 540], [3900, 540], [4460, 452], [4580, 372], [4700, 452], [4820, 372], [4940, 452], [5180, 540], [5220, 540], [5260, 540], [5300, 540], [5660, 492], [5700, 492], [5740, 492], [5860, 452], [5900, 452], [6020, 372], [6060, 372]], "gems": [[740, 316], [3300, 276], [4860, 284]], "enemies": [{"t": "walker", "x": 1123, "y": 600, "w": 34, "h": 30}, {"t": "flyer", "x": 1080, "y": 380, "w": 34, "h": 34, "amp": 120, "speed": 1.3}, {"t": "hopper", "x": 2562, "y": 600, "w": 36, "h": 33}, {"t": "hopper", "x": 4002, "y": 600, "w": 36, "h": 33}, {"t": "walker", "x": 4163, "y": 600, "w": 34, "h": 30}, {"t": "walker", "x": 5403, "y": 600, "w": 34, "h": 30}, {"t": "hopper", "x": 5562, "y": 600, "w": 36, "h": 33}], "springs": [], "crumbles": [[4440, 480, 80], [4560, 400, 80], [4680, 480, 80], [4800, 400, 80], [4920, 480, 80]], "movers": [[2760, 520, 120, "x", 280, 110, 0], [3280, 400, 120, "y", 120, 80, 0], [3520, 480, 120, "x", 160, 110, 0]], "checkpoints": [[1020, 600], [2540, 600], [3860, 600], [5220, 600]], "goal": [6380, 600]}, {"id": 4, "name": "Cœur de l'Orage", "subtitle": "L'ultime course. Tout ce que tu sais, en une traite.", "width": 7280, "par": 120, "theme": {"sky": ["#0a0414", "#1e0830", "#3d0f4e", "#7a1a5e"], "accent": "#ff5ce1", "accent2": "#7c5cff", "glow": "#ffd0f8", "far": "#2a0f3d", "mid": "#1b0829", "near": "#0d0417", "ground": "#160722", "groundTop": "#ff5ce1", "deco": "#43165c", "sun": "#ffd9f4", "star": true, "ambient": "#e05cff", "ui": "#ff5ce1"}, "hints": ["Tout est là : murs, ressorts, plateformes, dash", "Les yeux volants ne pardonnent rien", "Le portail t'attend au bout de l'orage"], "start": [120, 600], "solids": [[0, 600, 440, 120], [680, 600, 760, 120], [2000, 600, 360, 120], [3080, 600, 640, 120], [4560, 600, 520, 120], [6000, 600, 1280, 120], [-40, 0, 40, 600], [7280, 0, 80, 600], [1160, 160, 40, 320], [1400, 160, 40, 320], [6000, 600, 1280, 120]], "plats": [[480, 480, 80], [1200, 400, 80], [1320, 320, 80], [1440, 160, 160], [1680, 280, 120], [1840, 360, 120], [4880, 320, 160], [5160, 520, 120], [5360, 440, 120], [5560, 520, 120], [5800, 440, 120]], "spikes": [[280, 576, 80, 24], [2160, 576, 120, 24], [3640, 576, 40, 24]], "coins": [[300, 508], [340, 508], [500, 452], [780, 540], [820, 540], [860, 540], [900, 540], [1220, 460], [1260, 460], [1300, 460], [1340, 460], [1380, 460], [1260, 400], [1380, 400], [1460, 132], [1500, 132], [1540, 132], [1580, 132], [1700, 252], [1740, 252], [1860, 332], [1900, 332], [2180, 492], [2220, 492], [2260, 492], [2420, 444], [2460, 425], [2500, 408], [2540, 393], [2580, 380], [2620, 370], [2660, 361], [2700, 355], [2740, 350], [2780, 348], [2820, 348], [2860, 350], [2900, 355], [2940, 361], [2980, 370], [3020, 380], [3060, 393], [3100, 408], [3140, 425], [3180, 444], [3340, 540], [3380, 540], [3420, 540], [3460, 540], [3820, 460], [3940, 380], [4060, 460], [4180, 380], [4300, 460], [4420, 380], [4620, 540], [4660, 540], [4700, 540], [4740, 540], [4900, 292], [4940, 292], [4980, 292], [5020, 292], [5180, 492], [5220, 492], [5380, 412], [5420, 412], [5580, 492], [5620, 492], [5820, 412], [5860, 412], [6140, 540], [6180, 540], [6220, 540], [6260, 540]], "gems": [[1260, 236], [3060, 276], [4220, 276], [4980, 268]], "enemies": [{"t": "flyer", "x": 520, "y": 340, "w": 34, "h": 34, "amp": 120, "speed": 1.5}, {"t": "walker", "x": 923, "y": 600, "w": 34, "h": 30}, {"t": "hopper", "x": 1042, "y": 600, "w": 36, "h": 33}, {"t": "hopper", "x": 2282, "y": 600, "w": 36, "h": 33}, {"t": "flyer", "x": 2800, "y": 260, "w": 34, "h": 34, "amp": 200, "speed": 1.6}, {"t": "walker", "x": 3563, "y": 600, "w": 34, "h": 30}, {"t": "walker", "x": 6243, "y": 600, "w": 34, "h": 30}, {"t": "flyer", "x": 6480, "y": 380, "w": 34, "h": 34, "amp": 160, "speed": 1.4}, {"t": "hopper", "x": 6722, "y": 600, "w": 36, "h": 33}], "springs": [[4802, 585, 36, 15]], "crumbles": [[3800, 480, 80], [3920, 400, 80], [4040, 480, 80], [4160, 400, 80], [4280, 480, 80], [4400, 400, 80]], "movers": [[2400, 520, 120, "x", 320, 110, 0], [2840, 440, 120, "y", 160, 75, 0]], "checkpoints": [[860, 600], [2100, 600], [3420, 600], [4700, 600]], "goal": [7020, 600]}];
+const LEVELS = [{"id": 0, "name": "Brise Matinale", "subtitle": "Les toits dorment encore. Réveille-les.", "width": 5040, "par": 55, "theme": {"sky": ["#1b1038", "#5b2a63", "#e0765a", "#ffc178"], "accent": "#ffb26b", "accent2": "#ff5d8f", "glow": "#ffd6a0", "far": "#3a2350", "mid": "#2a1740", "near": "#150b22", "ground": "#1d1030", "groundTop": "#ffb26b", "deco": "#7a4a86", "sun": "#ffe3b0", "star": true, "ambient": "#ff9e6b", "ui": "#ffb26b"}, "hints": ["ZQSD / Flèches : courir", "Espace : sauter — appuie 2× pour un double saut", "Maj : dash (en l'air aussi)"], "start": [120, 600], "solids": [[0, 600, 1000, 120], [1120, 600, 720, 120], [2000, 600, 360, 120], [3000, 600, 760, 120], [4360, 600, 680, 120], [-40, 0, 40, 600], [5040, 0, 80, 600]], "plats": [[2400, 480, 120], [2600, 400, 120], [2800, 480, 120], [3960, 440, 120], [4120, 480, 120]], "spikes": [[3360, 576, 80, 24]], "coins": [[1020, 548], [1060, 496], [1100, 548], [1860, 548], [1900, 495], [1940, 495], [1980, 548], [2420, 452], [2460, 452], [2620, 372], [2660, 372], [2820, 452], [2860, 452], [3100, 540], [3140, 540], [3180, 540], [3220, 540], [3380, 492], [3420, 492], [3820, 452], [3860, 452], [3980, 412], [4020, 412], [4140, 452], [4180, 452], [3860, 364], [3900, 364], [4500, 540], [4540, 540], [4580, 540], [4620, 540]], "gems": [[2660, 296], [4620, 440]], "enemies": [{"t": "walker", "x": 1403, "y": 600, "w": 34, "h": 30}, {"t": "walker", "x": 1643, "y": 600, "w": 34, "h": 30}, {"t": "walker", "x": 3043, "y": 600, "w": 34, "h": 30}, {"t": "walker", "x": 3603, "y": 600, "w": 34, "h": 30}, {"t": "walker", "x": 4723, "y": 600, "w": 34, "h": 30}], "springs": [], "crumbles": [[3800, 480, 120]], "movers": [], "checkpoints": [[3500, 600]], "goal": [4860, 600]}, {"id": 1, "name": "Forêt de Néon", "subtitle": "La sève lumineuse ne pardonne pas les faux pas.", "width": 5680, "par": 70, "theme": {"sky": ["#04121a", "#062a33", "#0a4a48", "#127a63"], "accent": "#3dffc0", "accent2": "#7bff5d", "glow": "#b8ffe8", "far": "#0a2a2e", "mid": "#07201f", "near": "#03100f", "ground": "#061a17", "groundTop": "#3dffc0", "deco": "#0d3a35", "sun": "#d6fff2", "star": true, "ambient": "#26e0a0", "ui": "#3dffc0"}, "hints": ["Saute contre un mur, puis saute encore : tu grimpes", "Le double saut sauve des vies", "BAS en l'air : chute rapide"], "start": [120, 600], "solids": [[0, 600, 760, 120], [960, 600, 840, 120], [1800, 600, 280, 120], [2560, 600, 680, 120], [3880, 600, 1240, 120], [5160, 600, 520, 120], [-40, 0, 40, 600], [5680, 0, 80, 600], [1800, 240, 40, 280], [2040, 240, 40, 280]], "plats": [[800, 520, 80], [1840, 440, 80], [1960, 360, 80], [2080, 240, 160], [2280, 360, 120], [2440, 440, 120], [3320, 480, 120], [3520, 400, 120], [3720, 480, 120], [4560, 520, 120], [4720, 440, 120], [4880, 360, 120], [5240, 440, 120]], "spikes": [[1360, 576, 80, 24], [4200, 576, 80, 24]], "coins": [[780, 556], [820, 508], [860, 492], [900, 508], [940, 556], [1860, 500], [1900, 500], [1940, 500], [1980, 500], [2020, 500], [1860, 400], [2020, 400], [2100, 212], [2140, 212], [2180, 212], [2220, 212], [2300, 332], [2340, 332], [2460, 412], [2500, 412], [2660, 540], [2700, 540], [2740, 540], [2780, 540], [3340, 452], [3380, 452], [3540, 372], [3580, 372], [3740, 452], [3780, 452], [4220, 516], [4260, 516], [4580, 492], [4620, 492], [4740, 412], [4780, 412], [4900, 332], [4940, 332], [5020, 540], [5060, 540], [5100, 540], [5140, 540], [5260, 412], [5300, 412]], "gems": [[1940, 276], [3580, 316], [4940, 308]], "enemies": [{"t": "flyer", "x": 440, "y": 380, "w": 34, "h": 34, "amp": 120, "speed": 1.0}, {"t": "walker", "x": 1123, "y": 600, "w": 34, "h": 30}, {"t": "hopper", "x": 1562, "y": 600, "w": 36, "h": 33}, {"t": "walker", "x": 2883, "y": 600, "w": 34, "h": 30}, {"t": "hopper", "x": 3082, "y": 600, "w": 36, "h": 33}, {"t": "flyer", "x": 4040, "y": 380, "w": 34, "h": 34, "amp": 160, "speed": 1.2}, {"t": "hopper", "x": 5282, "y": 600, "w": 36, "h": 33}, {"t": "walker", "x": 5563, "y": 600, "w": 34, "h": 30}], "springs": [], "crumbles": [], "movers": [], "checkpoints": [[1260, 600], [2740, 600], [4340, 600]], "goal": [5460, 600]}, {"id": 2, "name": "Canyons de Verre", "subtitle": "Ressorts, plateformes mobiles et sable qui s'effrite.", "width": 6160, "par": 85, "theme": {"sky": ["#170619", "#3b0d2e", "#8b1e3f", "#e0563c"], "accent": "#ff8a3d", "accent2": "#ff3d6e", "glow": "#ffd0a0", "far": "#4a1430", "mid": "#2e0b22", "near": "#180614", "ground": "#22071c", "groundTop": "#ff8a3d", "deco": "#5c1a3a", "sun": "#ffd9a0", "star": false, "ambient": "#ff7a4a", "ui": "#ff8a3d"}, "hints": ["Les ressorts t'envoient très haut", "Les plateformes claires s'effondrent : ne traîne pas", "Maj en l'air : dash pour franchir les grands gouffres"], "start": [120, 600], "solids": [[0, 600, 600, 120], [1200, 600, 720, 120], [2600, 600, 840, 120], [4000, 600, 760, 120], [5320, 600, 840, 120], [-40, 0, 40, 600], [6160, 0, 80, 600]], "plats": [[400, 280, 160], [4840, 480, 120], [5000, 400, 120], [5160, 480, 120]], "spikes": [[1560, 576, 120, 24], [3240, 576, 80, 24], [4560, 576, 120, 24]], "coins": [[420, 252], [460, 252], [500, 252], [540, 252], [180, 540], [220, 540], [260, 540], [300, 540], [660, 508], [700, 482], [740, 460], [780, 445], [820, 434], [860, 429], [900, 429], [940, 434], [980, 445], [1020, 460], [1060, 482], [1100, 508], [1260, 540], [1300, 540], [1340, 540], [1380, 540], [1580, 492], [1620, 492], [1660, 492], [1980, 452], [2020, 452], [2180, 412], [2220, 412], [2380, 452], [2420, 452], [2700, 540], [2740, 540], [2780, 540], [2820, 540], [3540, 348], [3580, 313], [3620, 287], [3660, 267], [3700, 256], [3740, 252], [3780, 256], [3820, 267], [3860, 287], [3900, 313], [3940, 348], [4100, 540], [4140, 540], [4180, 540], [4220, 540], [4580, 492], [4620, 492], [4660, 492], [4860, 452], [4900, 452], [5020, 372], [5060, 372], [5180, 452], [5220, 452]], "gems": [[500, 204], [2260, 348], [5060, 308]], "enemies": [{"t": "walker", "x": 1443, "y": 600, "w": 34, "h": 30}, {"t": "hopper", "x": 1802, "y": 600, "w": 36, "h": 33}, {"t": "hopper", "x": 2922, "y": 600, "w": 36, "h": 33}, {"t": "walker", "x": 3123, "y": 600, "w": 34, "h": 30}, {"t": "walker", "x": 4403, "y": 600, "w": 34, "h": 30}, {"t": "walker", "x": 5563, "y": 600, "w": 34, "h": 30}, {"t": "hopper", "x": 5762, "y": 600, "w": 36, "h": 33}], "springs": [[362, 585, 36, 15]], "crumbles": [[1960, 480, 120], [2160, 440, 120], [2360, 480, 120]], "movers": [[680, 520, 120, "x", 360, 80, 0], [3520, 520, 120, "y", 160, 65, 0], [3720, 400, 120, "x", 200, 80, 0]], "checkpoints": [[1340, 600], [2780, 600], [4300, 600]], "goal": [5900, 600]}, {"id": 3, "name": "Glace Électrique", "subtitle": "Un faux pas et tu glisses vers l'infini.", "width": 6640, "par": 100, "theme": {"sky": ["#04081f", "#0a1a44", "#123a6b", "#2f8fbf"], "accent": "#5cd8ff", "accent2": "#a08cff", "glow": "#d8f6ff", "far": "#0d2150", "mid": "#081634", "near": "#040a1d", "ground": "#081428", "groundTop": "#5cd8ff", "deco": "#123a63", "sun": "#e8f8ff", "star": true, "ambient": "#5cd8ff", "ui": "#7fe4ff"}, "hints": ["Les murs de glace sont tes alliés", "Enchaîne saut + dash pour aller plus loin", "Chute rapide : BAS en l'air"], "start": [120, 600], "solids": [[0, 600, 520, 120], [840, 600, 960, 120], [2200, 600, 480, 120], [3720, 600, 640, 120], [5120, 600, 680, 120], [6160, 600, 480, 120], [-40, 0, 40, 600], [6640, 0, 80, 600], [1360, 240, 40, 280], [1600, 240, 40, 280]], "plats": [[560, 480, 80], [720, 400, 80], [1400, 440, 80], [1520, 360, 80], [1640, 240, 160], [1880, 360, 120], [2040, 440, 120], [5840, 480, 120], [6000, 400, 120]], "spikes": [[320, 576, 80, 24], [2400, 576, 120, 24], [4240, 576, 80, 24], [5640, 576, 120, 24]], "coins": [[340, 508], [380, 508], [580, 452], [740, 372], [940, 540], [980, 540], [1020, 540], [1060, 540], [1420, 500], [1460, 500], [1500, 500], [1540, 500], [1580, 500], [1500, 400], [1660, 212], [1700, 212], [1740, 212], [1780, 212], [1900, 332], [1940, 332], [2060, 412], [2100, 412], [2420, 492], [2460, 492], [2500, 492], [2820, 436], [2860, 414], [2900, 395], [2940, 380], [2980, 367], [3020, 358], [3060, 352], [3100, 348], [3140, 348], [3180, 352], [3220, 358], [3260, 367], [3300, 380], [3340, 395], [3380, 414], [3420, 436], [3780, 540], [3820, 540], [3860, 540], [3900, 540], [4460, 452], [4580, 372], [4700, 452], [4820, 372], [4940, 452], [5180, 540], [5220, 540], [5260, 540], [5300, 540], [5660, 492], [5700, 492], [5740, 492], [5860, 452], [5900, 452], [6020, 372], [6060, 372]], "gems": [[740, 316], [3300, 276], [4860, 284]], "enemies": [{"t": "walker", "x": 1123, "y": 600, "w": 34, "h": 30}, {"t": "flyer", "x": 1080, "y": 380, "w": 34, "h": 34, "amp": 120, "speed": 1.3}, {"t": "hopper", "x": 2562, "y": 600, "w": 36, "h": 33}, {"t": "hopper", "x": 4002, "y": 600, "w": 36, "h": 33}, {"t": "walker", "x": 4163, "y": 600, "w": 34, "h": 30}, {"t": "walker", "x": 5403, "y": 600, "w": 34, "h": 30}, {"t": "hopper", "x": 5562, "y": 600, "w": 36, "h": 33}], "springs": [], "crumbles": [[4440, 480, 80], [4560, 400, 80], [4680, 480, 80], [4800, 400, 80], [4920, 480, 80]], "movers": [[2760, 520, 120, "x", 280, 110, 0], [3280, 400, 120, "y", 120, 80, 0], [3520, 480, 120, "x", 160, 110, 0]], "checkpoints": [[1020, 600], [2540, 600], [3860, 600], [5220, 600]], "goal": [6380, 600]}, {"id": 4, "name": "Cœur de l'Orage", "subtitle": "L'ultime course. Tout ce que tu sais, en une traite.", "width": 7280, "par": 120, "theme": {"sky": ["#0a0414", "#1e0830", "#3d0f4e", "#7a1a5e"], "accent": "#ff5ce1", "accent2": "#7c5cff", "glow": "#ffd0f8", "far": "#2a0f3d", "mid": "#1b0829", "near": "#0d0417", "ground": "#160722", "groundTop": "#ff5ce1", "deco": "#43165c", "sun": "#ffd9f4", "star": true, "ambient": "#e05cff", "ui": "#ff5ce1", "weather": "storm"}, "hints": ["Tout est là : murs, ressorts, plateformes, dash", "Les yeux volants ne pardonnent rien", "Le portail t'attend au bout de l'orage"], "start": [120, 600], "solids": [[0, 600, 440, 120], [680, 600, 760, 120], [2000, 600, 360, 120], [3080, 600, 640, 120], [4560, 600, 520, 120], [6000, 600, 1280, 120], [-40, 0, 40, 600], [7280, 0, 80, 600], [1160, 160, 40, 320], [1400, 160, 40, 320], [6000, 600, 1280, 120]], "plats": [[480, 480, 80], [1200, 400, 80], [1320, 320, 80], [1440, 160, 160], [1680, 280, 120], [1840, 360, 120], [4880, 320, 160], [5160, 520, 120], [5360, 440, 120], [5560, 520, 120], [5800, 440, 120]], "spikes": [[280, 576, 80, 24], [2160, 576, 120, 24], [3640, 576, 40, 24]], "coins": [[300, 508], [340, 508], [500, 452], [780, 540], [820, 540], [860, 540], [900, 540], [1220, 460], [1260, 460], [1300, 460], [1340, 460], [1380, 460], [1260, 400], [1380, 400], [1460, 132], [1500, 132], [1540, 132], [1580, 132], [1700, 252], [1740, 252], [1860, 332], [1900, 332], [2180, 492], [2220, 492], [2260, 492], [2420, 444], [2460, 425], [2500, 408], [2540, 393], [2580, 380], [2620, 370], [2660, 361], [2700, 355], [2740, 350], [2780, 348], [2820, 348], [2860, 350], [2900, 355], [2940, 361], [2980, 370], [3020, 380], [3060, 393], [3100, 408], [3140, 425], [3180, 444], [3340, 540], [3380, 540], [3420, 540], [3460, 540], [3820, 460], [3940, 380], [4060, 460], [4180, 380], [4300, 460], [4420, 380], [4620, 540], [4660, 540], [4700, 540], [4740, 540], [4900, 292], [4940, 292], [4980, 292], [5020, 292], [5180, 492], [5220, 492], [5380, 412], [5420, 412], [5580, 492], [5620, 492], [5820, 412], [5860, 412], [6140, 540], [6180, 540], [6220, 540], [6260, 540]], "gems": [[1260, 236], [3060, 276], [4220, 276], [4980, 268]], "enemies": [{"t": "flyer", "x": 520, "y": 340, "w": 34, "h": 34, "amp": 120, "speed": 1.5}, {"t": "walker", "x": 923, "y": 600, "w": 34, "h": 30}, {"t": "hopper", "x": 1042, "y": 600, "w": 36, "h": 33}, {"t": "hopper", "x": 2282, "y": 600, "w": 36, "h": 33}, {"t": "flyer", "x": 2800, "y": 260, "w": 34, "h": 34, "amp": 200, "speed": 1.6}, {"t": "walker", "x": 3563, "y": 600, "w": 34, "h": 30}, {"t": "walker", "x": 6243, "y": 600, "w": 34, "h": 30}, {"t": "flyer", "x": 6480, "y": 380, "w": 34, "h": 34, "amp": 160, "speed": 1.4}, {"t": "hopper", "x": 6722, "y": 600, "w": 36, "h": 33}], "springs": [[4802, 585, 36, 15]], "crumbles": [[3800, 480, 80], [3920, 400, 80], [4040, 480, 80], [4160, 400, 80], [4280, 480, 80], [4400, 400, 80]], "movers": [[2400, 520, 120, "x", 320, 110, 0], [2840, 440, 120, "y", 160, 75, 0]], "checkpoints": [[860, 600], [2100, 600], [3420, 600], [4700, 600]], "goal": [7020, 600]}, {"id": 5, "name": "Grand Line", "subtitle": "La mer des pirates : le trésor t'attend au bout des vagues.", "width": 6880, "par": 115, "theme": {"sky": ["#04101f", "#072a4a", "#0e5a7a", "#1f9fb8"], "accent": "#ffd24a", "accent2": "#ff5d5d", "glow": "#fff0b0", "far": "#0a2a40", "mid": "#072033", "near": "#03101c", "ground": "#061a28", "groundTop": "#ffd24a", "deco": "#0d3a52", "sun": "#fff3c0", "star": false, "ambient": "#3fd0e0", "ui": "#ffd24a", "weather": "rain", "skyline": "sea"}, "hints": ["Les radeaux mobiles ont un rythme : lis-le avant de sauter", "Les mâts se grimpent en sautant de mur en mur", "Dash en l'air pour franchir les grandes vagues"], "start": [120, 600], "solids": [[0, 600, 520, 120], [800, 600, 760, 120], [1840, 600, 520, 120], [2640, 600, 760, 120], [3680, 600, 760, 120], [4720, 600, 360, 120], [5680, 600, 1200, 120], [-40, 0, 40, 600], [6880, 0, 80, 600], [1880, 240, 40, 280], [2120, 240, 40, 280]], "plats": [[1920, 440, 80], [2040, 360, 80], [2160, 240, 120], [2280, 360, 120], [2440, 440, 120], [3840, 320, 160], [6000, 480, 120], [6160, 400, 120], [6320, 480, 120]], "spikes": [[1200, 576, 80, 24], [3040, 576, 120, 24], [6560, 576, 80, 24]], "coins": [[180, 540], [220, 540], [260, 540], [300, 540], [540, 548], [580, 498], [620, 498], [660, 548], [860, 540], [900, 540], [940, 540], [980, 540], [1220, 492], [1260, 492], [1580, 484], [1620, 433], [1660, 416], [1700, 433], [1740, 484], [1940, 500], [1980, 500], [2020, 500], [2060, 500], [2100, 500], [2020, 400], [2180, 212], [2220, 212], [2260, 212], [2300, 332], [2340, 332], [2460, 412], [2500, 412], [2700, 540], [2740, 540], [2780, 540], [2820, 540], [3060, 492], [3100, 492], [3140, 492], [3420, 452], [3460, 452], [3540, 372], [3580, 372], [3860, 292], [3900, 292], [3940, 292], [3980, 292], [4140, 540], [4180, 540], [4220, 540], [4260, 540], [4460, 452], [4500, 395], [4540, 395], [4580, 452], [4780, 540], [4820, 540], [4860, 540], [4900, 540], [5100, 452], [5140, 452], [5220, 372], [5260, 372], [5420, 484], [5460, 433], [5500, 416], [5540, 433], [5580, 484], [5740, 540], [5780, 540], [5820, 540], [5860, 540], [6020, 452], [6060, 452], [6180, 372], [6220, 372], [6340, 452], [6380, 452], [6580, 492], [6620, 492]], "gems": [[2020, 276], [3580, 308], [3940, 244], [5220, 300], [6220, 316]], "enemies": [{"t": "walker", "x": 363, "y": 600, "w": 34, "h": 30}, {"t": "walker", "x": 1043, "y": 600, "w": 34, "h": 30}, {"t": "hopper", "x": 1402, "y": 600, "w": 36, "h": 33}, {"t": "walker", "x": 2883, "y": 600, "w": 34, "h": 30}, {"t": "hopper", "x": 3242, "y": 600, "w": 36, "h": 33}, {"t": "flyer", "x": 4120, "y": 380, "w": 34, "h": 34, "amp": 120, "speed": 1.3}, {"t": "walker", "x": 4243, "y": 600, "w": 34, "h": 30}, {"t": "walker", "x": 4803, "y": 600, "w": 34, "h": 30}, {"t": "flyer", "x": 6000, "y": 340, "w": 34, "h": 34, "amp": 160, "speed": 1.5}, {"t": "walker", "x": 5923, "y": 600, "w": 34, "h": 30}, {"t": "hopper", "x": 6402, "y": 600, "w": 36, "h": 33}], "springs": [[3762, 585, 36, 15]], "crumbles": [[3400, 480, 80], [3520, 400, 80], [5080, 480, 80], [5200, 400, 80]], "movers": [[1560, 520, 120, "x", 160, 80, 0], [4440, 520, 120, "y", 160, 75, 0], [5400, 520, 120, "x", 160, 90, 0]], "checkpoints": [[900, 600], [2260, 600], [2820, 600], [4180, 600], [4900, 600]], "goal": [6740, 600]}, {"id": 6, "name": "Lugnica Enneigée", "subtitle": "Le royaume de glace veille sous une neige éternelle.", "width": 7120, "par": 125, "theme": {"sky": ["#0b0820", "#1d1440", "#3a2a6b", "#7a6ab0"], "accent": "#c9b8ff", "accent2": "#8fd8ff", "glow": "#f0eaff", "far": "#1a1238", "mid": "#120c28", "near": "#08051a", "ground": "#100a26", "groundTop": "#c9b8ff", "deco": "#2a1f52", "sun": "#f2f0ff", "star": true, "ambient": "#a898ff", "ui": "#c9b8ff", "weather": "snow", "skyline": "castle"}, "hints": ["La neige cache les dalles fragiles", "Enchaîne les sauts de mur dans les ruines", "Les plateformes mobiles traversent le blizzard"], "start": [120, 600], "solids": [[0, 600, 480, 120], [760, 600, 640, 120], [1680, 600, 600, 120], [2560, 600, 680, 120], [3520, 600, 760, 120], [4560, 600, 760, 120], [5600, 600, 760, 120], [6640, 600, 480, 120], [-40, 0, 40, 600], [7120, 0, 80, 600], [1720, 240, 40, 280], [1960, 240, 40, 280]], "plats": [[1760, 440, 80], [1880, 360, 80], [2000, 240, 120], [2120, 360, 120], [2880, 280, 160], [3280, 480, 80], [3400, 400, 80], [6000, 440, 120], [6160, 360, 120], [6480, 440, 80]], "spikes": [[1160, 576, 80, 24], [3920, 576, 80, 24], [5080, 576, 120, 24]], "coins": [[180, 540], [220, 540], [260, 540], [300, 540], [500, 548], [540, 498], [580, 498], [620, 548], [820, 540], [860, 540], [900, 540], [940, 540], [1180, 492], [1220, 492], [1420, 452], [1460, 452], [1540, 372], [1580, 372], [1780, 500], [1820, 500], [1860, 500], [1900, 500], [1940, 500], [1860, 400], [2020, 212], [2060, 212], [2100, 212], [2140, 332], [2180, 332], [2300, 484], [2340, 433], [2380, 416], [2420, 433], [2460, 484], [2620, 540], [2660, 540], [2700, 540], [2740, 540], [2900, 252], [2940, 252], [2980, 252], [3020, 252], [3300, 452], [3340, 452], [3420, 372], [3460, 372], [3580, 540], [3620, 540], [3660, 540], [3700, 540], [3940, 492], [3980, 492], [4300, 484], [4340, 433], [4380, 416], [4420, 433], [4460, 484], [4620, 540], [4660, 540], [4700, 540], [4740, 540], [5100, 492], [5140, 492], [5180, 492], [5340, 452], [5380, 452], [5460, 372], [5500, 372], [5660, 540], [5700, 540], [5740, 540], [5780, 540], [6020, 412], [6060, 412], [6180, 332], [6220, 332], [6380, 516], [6420, 466], [6460, 466], [6500, 516], [6500, 412], [6540, 412], [6700, 540], [6740, 540], [6780, 540], [6820, 540]], "gems": [[1540, 308], [1860, 276], [2980, 204], [6220, 276]], "enemies": [{"t": "walker", "x": 363, "y": 600, "w": 34, "h": 30}, {"t": "hopper", "x": 1002, "y": 600, "w": 36, "h": 33}, {"t": "walker", "x": 1283, "y": 600, "w": 34, "h": 30}, {"t": "flyer", "x": 3080, "y": 380, "w": 34, "h": 34, "amp": 120, "speed": 1.2}, {"t": "walker", "x": 3123, "y": 600, "w": 34, "h": 30}, {"t": "walker", "x": 3763, "y": 600, "w": 34, "h": 30}, {"t": "hopper", "x": 4082, "y": 600, "w": 36, "h": 33}, {"t": "walker", "x": 4803, "y": 600, "w": 34, "h": 30}, {"t": "hopper", "x": 4962, "y": 600, "w": 36, "h": 33}, {"t": "walker", "x": 5843, "y": 600, "w": 34, "h": 30}, {"t": "flyer", "x": 5960, "y": 340, "w": 34, "h": 34, "amp": 160, "speed": 1.4}, {"t": "hopper", "x": 6242, "y": 600, "w": 36, "h": 33}, {"t": "walker", "x": 6843, "y": 600, "w": 34, "h": 30}], "springs": [[2802, 585, 36, 15]], "crumbles": [[1400, 480, 80], [1520, 400, 80], [5320, 480, 80], [5440, 400, 80]], "movers": [[2280, 520, 120, "x", 160, 100, 0], [4280, 520, 120, "x", 160, 90, 0]], "checkpoints": [[860, 600], [2180, 600], [2740, 600], [3620, 600], [4900, 600], [6100, 600]], "goal": [6980, 600]}, {"id": 7, "name": "Tournoi des Héros", "subtitle": "L'arène ultime : toutes les techniques, un seul vainqueur.", "width": 7520, "par": 140, "theme": {"sky": ["#12040a", "#2e0a1c", "#6b1430", "#d05a2a"], "accent": "#ff7a3d", "accent2": "#ffd24a", "glow": "#ffe0b0", "far": "#33101e", "mid": "#220a14", "near": "#120408", "ground": "#1c0710", "groundTop": "#ff7a3d", "deco": "#4a1626", "sun": "#ffe8c0", "star": true, "ambient": "#ff8a5a", "ui": "#ff9a5d", "weather": "storm", "skyline": "torii"}, "hints": ["Tout est réuni : murs, ressorts, mobiles et dalles friables", "Garde ton calme dans la tempête", "Le portail t'attend au bout de l'arène"], "start": [120, 600], "solids": [[0, 600, 440, 120], [720, 600, 680, 120], [1680, 600, 520, 120], [2480, 600, 680, 120], [3440, 600, 680, 120], [4400, 600, 280, 120], [5160, 600, 1040, 120], [6480, 600, 1040, 120], [-40, 0, 40, 600], [7520, 0, 80, 600], [800, 160, 40, 320], [1040, 160, 40, 320]], "plats": [[840, 400, 80], [960, 320, 80], [1080, 160, 120], [1200, 280, 120], [2640, 320, 160], [2800, 440, 120], [2960, 360, 120], [4120, 480, 80], [4240, 400, 80], [5760, 440, 120], [5920, 360, 120], [6720, 480, 120], [6880, 400, 120]], "spikes": [[1920, 576, 120, 24], [3840, 576, 80, 24], [5600, 576, 120, 24], [7160, 576, 80, 24]], "coins": [[140, 540], [180, 540], [220, 540], [260, 540], [460, 548], [500, 498], [540, 498], [580, 548], [860, 460], [900, 460], [940, 460], [980, 460], [1020, 460], [940, 360], [1100, 172], [1140, 172], [1180, 172], [1220, 292], [1260, 292], [1420, 484], [1460, 433], [1500, 416], [1540, 433], [1580, 484], [1740, 540], [1780, 540], [1820, 540], [1860, 540], [1940, 492], [1980, 492], [2020, 492], [2220, 452], [2260, 452], [2340, 372], [2380, 372], [2660, 292], [2700, 292], [2740, 292], [2780, 292], [2820, 412], [2860, 412], [2980, 332], [3020, 332], [3180, 452], [3220, 395], [3260, 395], [3300, 452], [3500, 540], [3540, 540], [3580, 540], [3620, 540], [3860, 492], [3900, 492], [4140, 452], [4180, 452], [4260, 372], [4300, 372], [4460, 540], [4500, 540], [4540, 540], [4580, 540], [4700, 452], [4740, 452], [4820, 372], [4860, 372], [4940, 452], [4980, 452], [5060, 372], [5100, 372], [5220, 540], [5260, 540], [5300, 540], [5340, 540], [5620, 492], [5660, 492], [5700, 492], [5780, 412], [5820, 412], [5940, 332], [5980, 332], [6220, 484], [6260, 433], [6300, 416], [6340, 433], [6380, 484], [6540, 540], [6580, 540], [6620, 540], [6660, 540], [6740, 452], [6780, 452], [6900, 372], [6940, 372]], "gems": [[940, 236], [2740, 252], [4860, 300], [5980, 276]], "enemies": [{"t": "flyer", "x": 320, "y": 380, "w": 34, "h": 34, "amp": 120, "speed": 1.4}, {"t": "walker", "x": 1323, "y": 600, "w": 34, "h": 30}, {"t": "hopper", "x": 2082, "y": 600, "w": 36, "h": 33}, {"t": "flyer", "x": 2880, "y": 340, "w": 34, "h": 34, "amp": 120, "speed": 1.5}, {"t": "walker", "x": 3043, "y": 600, "w": 34, "h": 30}, {"t": "walker", "x": 3683, "y": 600, "w": 34, "h": 30}, {"t": "hopper", "x": 4002, "y": 600, "w": 36, "h": 33}, {"t": "walker", "x": 4523, "y": 600, "w": 34, "h": 30}, {"t": "hopper", "x": 5442, "y": 600, "w": 36, "h": 33}, {"t": "flyer", "x": 5800, "y": 380, "w": 34, "h": 34, "amp": 160, "speed": 1.6}, {"t": "walker", "x": 5923, "y": 600, "w": 34, "h": 30}, {"t": "hopper", "x": 6802, "y": 600, "w": 36, "h": 33}, {"t": "walker", "x": 7043, "y": 600, "w": 34, "h": 30}], "springs": [[2562, 585, 36, 15]], "crumbles": [[2200, 480, 80], [2320, 400, 80], [4680, 480, 80], [4800, 400, 80], [4920, 480, 80], [5040, 400, 80]], "movers": [[1400, 520, 120, "x", 160, 110, 0], [3160, 520, 120, "y", 160, 75, 0], [6200, 520, 120, "x", 160, 100, 0]], "checkpoints": [[1260, 600], [1820, 600], [2820, 600], [3780, 600], [4500, 600], [6060, 600]], "goal": [7340, 600]}];
 </script>
 <script>/* ============================================================
    NOVA RUN — audio 100 % synthèse (WebAudio), aucune ressource externe
@@ -604,7 +650,7 @@ const Sound = (function () {
     get ready() { return ok; },
     setMusic(on) { musicOn = on; if (musicBus) musicBus.gain.value = on ? 0.22 : 0; },
     setSfx(on) { sfxOn = on; if (sfxBus) sfxBus.gain.value = on ? 0.55 : 0; },
-    setMood(m) { mood = [0, 2, -1, 3, -4][m] || 0; },
+    setMood(m) { mood = [0, 2, -1, 3, -4, 1, -2, 4][m] ?? 0; },
     jump() {
       tone({ type: 'triangle', freq: 340, slide: 640, dur: 0.13, vol: 0.22 });
       noise({ dur: 0.06, vol: 0.05, filter: 'highpass', freq: 2400 });
@@ -1646,9 +1692,65 @@ const Render = (function () {
     const c = makeCanvas(SPAN, h);
     const g = c.getContext('2d');
     const base = VH * 0.86 - (VH - h);
+    // style piloté par le thème, avec repli sur les anciens repères par index
+    const style = th.skyline || (L.idx === 1 ? 'trees' : L.idx === 2 ? 'mesa' : L.idx === 3 ? 'peaks' : 'city');
     for (const d of deco) {
       const x = d.x;
-      if (L.idx === 1) {
+      if (style === 'sea') {
+        // bateaux pirates : coque, mât, voiles
+        const hh = d.h * 0.72;
+        g.fillStyle = hexA(th.mid, 0.9);
+        g.beginPath();
+        g.moveTo(x, base); g.lineTo(x + 6, base - hh * 0.42);
+        g.lineTo(x + d.w - 6, base - hh * 0.42); g.lineTo(x + d.w, base);
+        g.closePath(); g.fill();
+        const mastX = x + d.w / 2;
+        g.strokeStyle = hexA(th.mid, 0.95); g.lineWidth = 2.4;
+        g.beginPath(); g.moveTo(mastX, base - hh * 0.42); g.lineTo(mastX, base - hh); g.stroke();
+        g.fillStyle = hexA(th.accent, 0.22);
+        g.beginPath();
+        g.moveTo(mastX + 1.5, base - hh + 6); g.lineTo(mastX + d.w * 0.34, base - hh * 0.5);
+        g.lineTo(mastX + 1.5, base - hh * 0.48); g.closePath(); g.fill();
+        g.beginPath();
+        g.moveTo(mastX - 1.5, base - hh + 10); g.lineTo(mastX - d.w * 0.3, base - hh * 0.52);
+        g.lineTo(mastX - 1.5, base - hh * 0.5); g.closePath(); g.fill();
+        g.strokeStyle = hexA(th.ambient, 0.4); g.lineWidth = 2;
+        g.beginPath(); g.moveTo(x - 6, base - 2);
+        g.quadraticCurveTo(x + d.w * 0.25, base - 7, x + d.w * 0.5, base - 2);
+        g.quadraticCurveTo(x + d.w * 0.75, base + 3, x + d.w + 6, base - 2); g.stroke();
+      } else if (style === 'castle') {
+        // tours de château avec toits pointus et calots de neige
+        const hh = d.h * 0.85;
+        g.fillStyle = hexA(th.mid, 0.92);
+        g.fillRect(x + d.w * 0.2, base - hh * 0.6, d.w * 0.6, hh * 0.6);
+        g.beginPath();
+        g.moveTo(x + d.w * 0.12, base - hh * 0.6);
+        g.lineTo(x + d.w * 0.5, base - hh);
+        g.lineTo(x + d.w * 0.88, base - hh * 0.6);
+        g.closePath(); g.fill();
+        g.fillStyle = hexA('#ffffff', 0.5);
+        g.beginPath();
+        g.moveTo(x + d.w * 0.3, base - hh * 0.72);
+        g.lineTo(x + d.w * 0.5, base - hh);
+        g.lineTo(x + d.w * 0.7, base - hh * 0.72);
+        g.closePath(); g.fill();
+        for (let i = 0; i < 3; i++) {
+          g.fillStyle = hexA(th.accent, 0.4 + 0.15 * Math.sin(d.k * 6 + i));
+          g.fillRect(x + d.w * 0.42, base - hh * (0.52 - i * 0.16), d.w * 0.16, 4.5);
+        }
+      } else if (style === 'torii') {
+        // portails torii en silhouette
+        const hh = d.h * 0.8;
+        g.fillStyle = hexA(th.mid, 0.92);
+        const postW = Math.max(3, d.w * 0.09);
+        g.fillRect(x + d.w * 0.18, base - hh, postW, hh);
+        g.fillRect(x + d.w * 0.72, base - hh, postW, hh);
+        g.fillStyle = hexA(th.accent2, 0.5);
+        g.fillRect(x + d.w * 0.08, base - hh, d.w * 0.84, 5);
+        g.fillRect(x + d.w * 0.02, base - hh - 7, d.w * 0.96, 5);
+        g.fillStyle = hexA(th.mid, 0.9);
+        g.fillRect(x + d.w * 0.3, base - hh * 0.55, d.w * 0.4, 4);
+      } else if (style === 'trees') {
         const hh = d.h * 0.8;
         g.fillStyle = hexA(th.mid, 0.85);
         g.fillRect(x + d.w / 2 - 4, base - hh * 0.55, 8, hh * 0.55);
@@ -1658,7 +1760,7 @@ const Render = (function () {
         g.beginPath(); g.arc(x + d.w / 2, base - hh * 0.62, d.w * 0.9, 0, 6.283); g.fill();
         g.fillStyle = hexA(th.mid, 0.95);
         g.beginPath(); g.arc(x + d.w / 2, base - hh * 0.6, d.w * 0.42, 0, 6.283); g.fill();
-      } else if (L.idx === 2) {
+      } else if (style === 'mesa') {
         g.fillStyle = hexA(th.mid, 0.85);
         g.beginPath();
         g.moveTo(x, base); g.lineTo(x + d.w * 0.18, base - d.h * 0.7);
@@ -1666,7 +1768,7 @@ const Render = (function () {
         g.closePath(); g.fill();
         g.fillStyle = hexA(th.accent, 0.12);
         g.fillRect(x + d.w * 0.18, base - d.h * 0.7, d.w * 0.64, 3);
-      } else if (L.idx === 3) {
+      } else if (style === 'peaks') {
         g.beginPath();
         g.moveTo(x, base); g.lineTo(x + d.w * 0.5, base - d.h);
         g.lineTo(x + d.w, base); g.closePath();
@@ -2299,11 +2401,325 @@ const Render = (function () {
     }
   }
 
+  /* ========================================================== SKINS */
+  // Personnages dessinés en formes vectorielles néon : couleurs et accessoires
+  // reconnaissables (chapeau de paille, bandeau, chevelures…), aucun asset externe.
+  const SKINS = [
+    {
+      id: 'nova', name: 'Nova', tag: 'NOVA RUN', unlock: null,
+      body: ['#a8f7ff', '#4ce0ff', '#5f6bff'], glow: 'rgba(94,240,255,.8)',
+      arm: '#4ce0ff', leg: '#3d2b6b', scarf: '#ff5d8f',
+      head: 'visor', emblem: { type: 'diamond', color: '#ff5d8f' },
+    },
+    {
+      id: 'luffy', name: 'Luffy', tag: 'ONE PIECE', unlock: 5,
+      body: ['#ff8a6b', '#e83a2e', '#a81f1f'], glow: 'rgba(255,90,70,.75)',
+      arm: '#f0c8a0', leg: '#2b4a8f', scarf: '#ffd24a',
+      head: 'straw', skin: '#f0c8a0', emblem: null, scar: true,
+    },
+    {
+      id: 'zoro', name: 'Zoro', tag: 'ONE PIECE', unlock: 5,
+      body: ['#8df0b0', '#2fae6a', '#157a48'], glow: 'rgba(80,230,140,.7)',
+      arm: '#f0c8a0', leg: '#1f3a2e', scarf: '#e8f5e8',
+      head: 'green', skin: '#f0c8a0', emblem: null, eyeScar: true,
+    },
+    {
+      id: 'subaru', name: 'Subaru', tag: 'RE:ZERO', unlock: 6,
+      body: ['#4a5068', '#262a3d', '#141622'], glow: 'rgba(150,160,200,.65)',
+      arm: '#262a3d', leg: '#1a1c28', scarf: '#f4f0ff',
+      head: 'black', skin: '#f2d0b4', emblem: { type: 'stripe' },
+    },
+    {
+      id: 'emilia', name: 'Emilia', tag: 'RE:ZERO', unlock: 6,
+      body: ['#f6f1ff', '#d4c6ff', '#9a86e0'], glow: 'rgba(210,195,255,.8)',
+      arm: '#f6f1ff', leg: '#e6e0f8', scarf: '#c9b8ff',
+      head: 'silver', skin: '#fbe6da', emblem: { type: 'flower' },
+    },
+    {
+      id: 'rem', name: 'Rem', tag: 'RE:ZERO', unlock: 6,
+      body: ['#46567e', '#232f52', '#10182a'], glow: 'rgba(140,190,255,.75)',
+      arm: '#f2ecff', leg: '#10182a', scarf: '#9fd8ff',
+      head: 'blue', skin: '#fbe6da', emblem: { type: 'apron' },
+    },
+    {
+      id: 'naruto', name: 'Naruto', tag: 'SHONEN', unlock: 7,
+      body: ['#ffc163', '#ff8a1e', '#d85f10'], glow: 'rgba(255,150,50,.75)',
+      arm: '#f4d0a8', leg: '#2a2f3a', scarf: '#ff5d5d',
+      head: 'blondband', skin: '#f4d0a8', emblem: { type: 'swirl' }, whiskers: true,
+    },
+    {
+      id: 'goku', name: 'Goku', tag: 'SHONEN', unlock: 7,
+      body: ['#ffa65d', '#ff6a1e', '#d84a10'], glow: 'rgba(255,140,60,.75)',
+      arm: '#f4d0a8', leg: '#1e4fbf', scarf: '#3aa0ff',
+      head: 'blackspiky', skin: '#f4d0a8', emblem: { type: 'belt' },
+    },
+  ];
+
+  let skinId = 'nova';
+  const getSkin = () => SKINS.find(s => s.id === skinId) || SKINS[0];
+
+  function rrect(c, x, y, w, h, r) {
+    r = Math.min(r, Math.abs(w) / 2, Math.abs(h) / 2);
+    c.beginPath();
+    c.moveTo(x + r, y);
+    c.arcTo(x + w, y, x + w, y + h, r);
+    c.arcTo(x + w, y + h, x, y + h, r);
+    c.arcTo(x, y + h, x, y, r);
+    c.arcTo(x, y, x + w, y, r);
+    c.closePath();
+  }
+
+  /* ---------- emblèmes de poitrine */
+  function paintEmblem(c, sk, top) {
+    const e = sk.emblem;
+    if (!e) return;
+    if (e.type === 'diamond') {
+      c.fillStyle = 'rgba(10,20,45,.55)';
+      rrect(c, -7, top + 14, 14, 12, 4); c.fill();
+      c.fillStyle = hexA(e.color, 0.95);
+      c.beginPath();
+      c.moveTo(0, top + 17); c.lineTo(4.6, top + 22); c.lineTo(0, top + 27); c.lineTo(-4.6, top + 22);
+      c.closePath(); c.fill();
+    } else if (e.type === 'stripe') {
+      c.strokeStyle = 'rgba(244,240,255,.85)'; c.lineWidth = 2.2; c.lineCap = 'round';
+      c.beginPath(); c.moveTo(-9.5, top + 13); c.lineTo(-9.5, top + 27); c.stroke();
+      c.beginPath(); c.moveTo(9.5, top + 13); c.lineTo(9.5, top + 27); c.stroke();
+    } else if (e.type === 'flower') {
+      const fx = 0, fy = top + 21;
+      c.fillStyle = '#b79cff';
+      for (let i = 0; i < 5; i++) {
+        const a = (i / 5) * 6.283;
+        c.beginPath(); c.arc(fx + Math.cos(a) * 3.4, fy + Math.sin(a) * 3.4, 2.1, 0, 6.283); c.fill();
+      }
+      c.fillStyle = '#ffe9a0';
+      c.beginPath(); c.arc(fx, fy, 1.8, 0, 6.283); c.fill();
+    } else if (e.type === 'apron') {
+      c.fillStyle = 'rgba(242,236,255,.94)';
+      rrect(c, -6, top + 15, 12, 13, 3); c.fill();
+      c.strokeStyle = 'rgba(180,200,240,.9)'; c.lineWidth = 1.2;
+      c.beginPath(); c.moveTo(-6, top + 25); c.lineTo(6, top + 25); c.stroke();
+    } else if (e.type === 'swirl') {
+      c.strokeStyle = '#3a2030'; c.lineWidth = 1.6;
+      c.beginPath(); c.arc(0, top + 21, 4.6, 0, 6.283); c.stroke();
+      c.beginPath(); c.arc(0, top + 21, 2.6, 0, 4.2); c.stroke();
+      c.fillStyle = '#d83a2e';
+      c.beginPath(); c.arc(0, top + 21, 1.5, 0, 6.283); c.fill();
+    } else if (e.type === 'belt') {
+      c.fillStyle = '#1e4fbf';
+      rrect(c, -11, top + 24, 22, 4.4, 2); c.fill();
+      c.fillStyle = '#f4f0ff';
+      rrect(c, -1.8, top + 24.6, 3.6, 3.2, 1); c.fill();
+    }
+  }
+
+  /* ---------- coiffes / chevelures */
+  function hairSpikes(c, color, top, pts) {
+    c.fillStyle = color;
+    c.beginPath();
+    c.moveTo(-9.5, top + 7);
+    for (const [x, y] of pts) c.lineTo(x, top + y);
+    c.lineTo(9.5, top + 7);
+    c.closePath(); c.fill();
+  }
+
+  function paintHead(c, sk, p, top) {
+    const eyeX = p.dir * 2.2;
+    if (sk.head === 'visor') {
+      c.fillStyle = '#0d1330';
+      rrect(c, -9, top + 4, 18, 11, 5); c.fill();
+      if (p.blink > 0 || p.blink < -0.09) {
+        c.fillStyle = '#b8fbff';
+        rrect(c, -6 + eyeX, top + 8, 12, 3.2, 1.6); c.fill();
+      } else {
+        c.fillStyle = 'rgba(184,251,255,.95)';
+        rrect(c, -6 + eyeX, top + 8.6, 12, 2.4, 1.2); c.fill();
+      }
+      c.fillStyle = 'rgba(255,255,255,.85)';
+      c.beginPath(); c.arc(-5 + eyeX, top + 6.6, 1.3, 0, 6.283); c.fill();
+      return;
+    }
+
+    // chevelure longue (Émilia) : derrière le visage
+    if (sk.head === 'silver') {
+      c.fillStyle = '#e9e6f7';
+      rrect(c, -10.5, top + 4, 5, 27, 2.4); c.fill();
+      rrect(c, 5.5, top + 4, 5, 27, 2.4); c.fill();
+    }
+
+    // visage
+    c.fillStyle = sk.skin;
+    rrect(c, -9, top + 3, 18, 12, 5.5); c.fill();
+
+    // yeux
+    const blink = p.blink <= 0 && p.blink >= -0.09;
+    if (sk.eyeScar) {
+      // œil gauche fermé (cicatrice), œil droit ouvert
+      c.strokeStyle = '#2a1c22'; c.lineWidth = 1.4; c.lineCap = 'round';
+      c.beginPath(); c.moveTo(-6.4 + eyeX, top + 10.4); c.lineTo(-2.6 + eyeX, top + 9.2); c.stroke();
+      if (blink) { c.beginPath(); c.moveTo(2.4 + eyeX, top + 10); c.lineTo(5.8 + eyeX, top + 10); c.stroke(); }
+      else { c.fillStyle = '#2a1c22'; c.beginPath(); c.ellipse(4 + eyeX, top + 9.6, 1.7, 2.3, 0, 0, 6.283); c.fill(); }
+    } else if (blink) {
+      c.strokeStyle = '#2a1c22'; c.lineWidth = 1.3; c.lineCap = 'round';
+      c.beginPath(); c.moveTo(-6 + eyeX, top + 10); c.lineTo(-2.8 + eyeX, top + 10); c.stroke();
+      c.beginPath(); c.moveTo(2.8 + eyeX, top + 10); c.lineTo(6 + eyeX, top + 10); c.stroke();
+    } else {
+      c.fillStyle = '#2a1c22';
+      c.beginPath(); c.ellipse(-4.2 + eyeX, top + 9.6, 1.7, 2.3, 0, 0, 6.283); c.fill();
+      c.beginPath(); c.ellipse(4.2 + eyeX, top + 9.6, 1.7, 2.3, 0, 0, 6.283); c.fill();
+      c.fillStyle = 'rgba(255,255,255,.85)';
+      c.beginPath(); c.arc(-4.7 + eyeX, top + 8.8, 0.7, 0, 6.283); c.fill();
+      c.beginPath(); c.arc(3.7 + eyeX, top + 8.8, 0.7, 0, 6.283); c.fill();
+    }
+
+    // moustaches de Naruto
+    if (sk.whiskers) {
+      c.strokeStyle = 'rgba(120,70,40,.75)'; c.lineWidth = 0.9; c.lineCap = 'round';
+      for (const s of [-1, 1]) for (let i = 0; i < 2; i++) {
+        c.beginPath();
+        c.moveTo(s * 5.4, top + 10.6 + i * 2);
+        c.lineTo(s * 8.6, top + 10.2 + i * 2);
+        c.stroke();
+      }
+    }
+    // couture sous l'œil de Luffy
+    if (sk.scar) {
+      c.strokeStyle = '#9a5a44'; c.lineWidth = 1; c.lineCap = 'round';
+      c.beginPath(); c.moveTo(-6.2 + eyeX, top + 12.2); c.lineTo(-3.4 + eyeX, top + 13.2); c.stroke();
+      c.beginPath(); c.moveTo(-5.4 + eyeX, top + 12.2); c.lineTo(-5.4 + eyeX, top + 13.4); c.stroke();
+    }
+
+    // coiffes
+    if (sk.head === 'straw') {
+      // cheveux noirs sous le chapeau
+      c.fillStyle = '#241a18';
+      rrect(c, -9, top + 2.5, 18, 4.5, 2); c.fill();
+      // dôme
+      c.fillStyle = '#f0dd9a';
+      c.beginPath(); c.arc(0, top + 4.4, 8.6, Math.PI, 0); c.fill();
+      // bandeau rouge
+      c.fillStyle = '#d23b3b';
+      rrect(c, -8.6, top + 2.2, 17.2, 3, 1.4); c.fill();
+      // ailes
+      c.fillStyle = '#e8d290';
+      c.beginPath(); c.ellipse(0, top + 4.6, 13.4, 3.1, 0, 0, 6.283); c.fill();
+      c.strokeStyle = 'rgba(150,120,60,.8)'; c.lineWidth = 1;
+      c.beginPath(); c.ellipse(0, top + 4.6, 13.4, 3.1, 0, 0, 6.283); c.stroke();
+    } else if (sk.head === 'green') {
+      hairSpikes(c, '#37c96f', top, [[-8, 2], [-6, 5.4], [-3, 1.6], [0, 5], [3, 1.8], [6, 5.2], [8, 2.4]]);
+      c.fillStyle = '#37c96f';
+      rrect(c, -9.6, top + 4, 4, 8, 2); c.fill();
+    } else if (sk.head === 'black') {
+      hairSpikes(c, '#23202c', top, [[-7.5, 2.6], [-5, 6], [-2, 2.2], [1, 5.6], [4, 2.4], [7.5, 5.4]]);
+    } else if (sk.head === 'silver') {
+      hairSpikes(c, '#e9e6f7', top, [[-8, 2.4], [-5.5, 5.6], [-2.5, 2], [0.5, 5.4], [3.5, 2.2], [7, 5.2]]);
+      // fleur sur le côté
+      c.fillStyle = '#f4b8e0';
+      for (let i = 0; i < 5; i++) {
+        const a = (i / 5) * 6.283;
+        c.beginPath(); c.arc(-8 + Math.cos(a) * 1.9, top + 4.4 + Math.sin(a) * 1.9, 1.3, 0, 6.283); c.fill();
+      }
+      c.fillStyle = '#ffe9a0';
+      c.beginPath(); c.arc(-8, top + 4.4, 1, 0, 6.283); c.fill();
+    } else if (sk.head === 'blue') {
+      hairSpikes(c, '#7fc4ff', top, [[-8, 2.2], [-5, 5.2], [-2, 2], [1, 5], [4, 2.2], [7.5, 5]]);
+      // carré du bob
+      c.fillStyle = '#7fc4ff';
+      rrect(c, -10, top + 4, 4.4, 11, 2.2); c.fill();
+      rrect(c, 5.6, top + 4, 4.4, 11, 2.2); c.fill();
+      // ruban
+      c.fillStyle = '#ff9ecb';
+      c.beginPath();
+      c.moveTo(7.4, top + 4.6); c.lineTo(11, top + 2.6); c.lineTo(10.6, top + 6.6);
+      c.closePath(); c.fill();
+    } else if (sk.head === 'blondband') {
+      hairSpikes(c, '#ffd24d', top, [[-8.5, 1.4], [-6, 4.8], [-3, 1], [0, 4.6], [3, 1.2], [6, 4.6], [8.5, 1.6]]);
+      // bandeau
+      c.fillStyle = '#1d3a7a';
+      rrect(c, -9.6, top + 4.4, 19.2, 4, 1.6); c.fill();
+      c.fillStyle = '#b9c6d8';
+      rrect(c, -3.4, top + 4.9, 6.8, 3, 1); c.fill();
+      c.fillStyle = '#5a6a82';
+      c.beginPath(); c.arc(0, top + 6.4, 0.9, 0, 6.283); c.fill();
+    } else if (sk.head === 'blackspiky') {
+      hairSpikes(c, '#1d1a22', top, [[-9, 0.6], [-6.5, 4.6], [-4, -0.6], [-1, 4.2], [1.5, -0.8], [4.5, 4], [7, 0.4], [9, 3.6]]);
+    }
+  }
+
+  /* ---------- peinture complète du personnage (contexte arbitraire) */
+  function paintAvatar(c, sk, p, t) {
+    const top = -p.h;
+    const run = p.onGround ? Math.sin(p.runPhase) : 0;
+    const legY = -9;
+    // jambes
+    c.fillStyle = sk.leg;
+    if (!p.onGround) {
+      rrect(c, -8, legY, 7, 8, 3); c.fill();
+      rrect(c, 2, legY - 2, 7, 7, 3); c.fill();
+    } else {
+      rrect(c, -8 + run * 2, legY - Math.max(0, run) * 2, 7, 8, 3); c.fill();
+      rrect(c, 2 - run * 2, legY - Math.max(0, -run) * 2, 7, 8, 3); c.fill();
+    }
+    // corps
+    const g = c.createLinearGradient(0, top, 0, 0);
+    g.addColorStop(0, sk.body[0]); g.addColorStop(0.45, sk.body[1]); g.addColorStop(1, sk.body[2]);
+    c.fillStyle = g;
+    c.shadowColor = sk.glow; c.shadowBlur = 18;
+    rrect(c, -p.w / 2 + 1, top + 1, p.w - 2, p.h - 3, 9); c.fill();
+    c.shadowBlur = 0;
+    c.strokeStyle = 'rgba(255,255,255,.75)'; c.lineWidth = 1.6;
+    rrect(c, -p.w / 2 + 1, top + 1, p.w - 2, p.h - 3, 9); c.stroke();
+
+    paintEmblem(c, sk, top);
+    paintHead(c, sk, p, top);
+
+    // bras
+    c.fillStyle = sk.arm;
+    const armSwing = p.onGround ? Math.cos(p.runPhase) * 3 : -4;
+    rrect(c, p.dir * 9 - 2, top + 17 + armSwing, 5.4, 10, 2.6); c.fill();
+    if (sk.id === 'goku') {
+      c.fillStyle = '#1e4fbf';
+      rrect(c, p.dir * 9 - 2.4, top + 24 + armSwing, 6.2, 3.4, 1.6); c.fill();
+    }
+  }
+
+  /* ---------- vignette pour l'écran de sélection */
+  function drawSkinPreview(canvas, id) {
+    const sk = SKINS.find(s => s.id === id) || SKINS[0];
+    const c = canvas.getContext('2d');
+    const dpr = Math.min(2, window.devicePixelRatio || 1);
+    const W = 180, H = 180;
+    canvas.width = W * dpr; canvas.height = H * dpr;
+    c.setTransform(dpr, 0, 0, dpr, 0, 0);
+    c.clearRect(0, 0, W, H);
+    const halo = c.createRadialGradient(W / 2, H * 0.7, 6, W / 2, H * 0.7, 84);
+    halo.addColorStop(0, hexA(sk.body[1], 0.32)); halo.addColorStop(1, hexA(sk.body[1], 0));
+    c.fillStyle = halo; c.fillRect(0, 0, W, H);
+    // ombre au sol
+    c.fillStyle = 'rgba(0,0,0,.3)';
+    c.beginPath(); c.ellipse(W / 2, H * 0.88, 26, 6, 0, 0, 6.283); c.fill();
+    c.save();
+    c.translate(W / 2, H * 0.86);
+    c.scale(2.6, 2.6);
+    // écharpe statique
+    c.lineCap = 'round';
+    for (let i = 0; i < 3; i++) {
+      c.strokeStyle = hexA(sk.scarf, 0.85 - i * 0.2);
+      c.lineWidth = 6 - i * 1.4;
+      c.beginPath();
+      c.moveTo(-4, -30 + i * 3);
+      c.quadraticCurveTo(-12 - i * 3, -27 + i * 3, -16 - i * 4, -22 + i * 4);
+      c.stroke();
+    }
+    paintAvatar(c, sk, { w: 26, h: 36, dir: 1, onGround: true, runPhase: 0.5, blink: 1 }, performance.now() / 1000);
+    c.restore();
+  }
+
   /* ========================================================== JOUEUR */
   function drawPlayer() {
     const p = Game.player;
     if (!p || p.dead) return;
     const th = Game.level.theme;
+    const sk = getSkin();
     const cx = p.x + p.w / 2, feet = p.y + p.h;
 
     // traînées de dash
@@ -2312,7 +2728,7 @@ const Render = (function () {
       ctx.globalAlpha = (t.life / 0.22) * 0.35;
       ctx.translate(t.x + p.w / 2, t.y + p.h);
       ctx.scale(p.sx, p.sy);
-      ctx.fillStyle = th.accent;
+      ctx.fillStyle = sk.glow;
       rr(-p.w / 2, -p.h, p.w, p.h, 9); ctx.fill();
       ctx.restore();
     }
@@ -2326,13 +2742,13 @@ const Render = (function () {
     const blinkOff = p.invuln > 0 && Math.floor(Game.time * 22) % 2 === 0;
     if (blinkOff) ctx.globalAlpha = 0.45;
 
-    // écharpe
+    // écharpe (couleur du skin)
     ctx.save();
     ctx.lineCap = 'round';
     for (let i = p.scarf.length - 1; i > 0; i--) {
       const a = p.scarf[i - 1], b = p.scarf[i];
       const w = 7.5 * (1 - i / (p.scarf.length + 1));
-      ctx.strokeStyle = hexA('#ff5d8f', 0.9 - i * 0.09);
+      ctx.strokeStyle = hexA(sk.scarf, 0.9 - i * 0.09);
       ctx.lineWidth = w;
       ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); ctx.stroke();
     }
@@ -2343,59 +2759,7 @@ const Render = (function () {
     ctx.scale(p.sx, p.sy);
     const spin = p.spinT > 0 ? (1 - p.spinT / 0.45) * Math.PI * 2 * p.dir : 0;
     if (spin) { ctx.translate(0, -p.h / 2); ctx.rotate(spin); ctx.translate(0, p.h / 2); }
-
-    const bodyTop = -p.h;
-    // jambes
-    const run = p.onGround ? Math.sin(p.runPhase) : 0;
-    const legY = -9;
-    ctx.fillStyle = '#3d2b6b';
-    if (!p.onGround) {
-      rr(-8, legY, 7, 8, 3); ctx.fill();
-      rr(2, legY - 2, 7, 7, 3); ctx.fill();
-    } else {
-      rr(-8 + run * 2, legY - Math.max(0, run) * 2, 7, 8, 3); ctx.fill();
-      rr(2 - run * 2, legY - Math.max(0, -run) * 2, 7, 8, 3); ctx.fill();
-    }
-
-    // corps
-    const g = ctx.createLinearGradient(0, bodyTop, 0, 0);
-    g.addColorStop(0, '#a8f7ff');
-    g.addColorStop(0.45, '#4ce0ff');
-    g.addColorStop(1, '#5f6bff');
-    ctx.fillStyle = g;
-    ctx.shadowColor = 'rgba(94,240,255,.8)'; ctx.shadowBlur = 18;
-    rr(-p.w / 2 + 1, bodyTop + 1, p.w - 2, p.h - 3, 9); ctx.fill();
-    ctx.shadowBlur = 0;
-    ctx.strokeStyle = 'rgba(230,255,255,.85)'; ctx.lineWidth = 1.6;
-    rr(-p.w / 2 + 1, bodyTop + 1, p.w - 2, p.h - 3, 9); ctx.stroke();
-
-    // plastron
-    ctx.fillStyle = 'rgba(10,20,45,.55)';
-    rr(-7, bodyTop + 14, 14, 12, 4); ctx.fill();
-    ctx.fillStyle = hexA('#ff5d8f', 0.95);
-    ctx.beginPath();
-    ctx.moveTo(0, bodyTop + 17); ctx.lineTo(4.6, bodyTop + 22); ctx.lineTo(0, bodyTop + 27); ctx.lineTo(-4.6, bodyTop + 22);
-    ctx.closePath(); ctx.fill();
-
-    // visière
-    ctx.fillStyle = '#0d1330';
-    rr(-9, bodyTop + 4, 18, 11, 5); ctx.fill();
-    const eyeX = p.dir * 2.4;
-    if (p.blink > 0 || p.blink < -0.09) {
-      ctx.fillStyle = '#b8fbff';
-      rr(-6 + eyeX, bodyTop + 8, 12, 3.2, 1.6); ctx.fill();
-    } else {
-      ctx.fillStyle = 'rgba(184,251,255,.95)';
-      rr(-6 + eyeX, bodyTop + 8.6, 12, 2.4, 1.2); ctx.fill();
-    }
-    ctx.fillStyle = 'rgba(255,255,255,.85)';
-    ctx.beginPath(); ctx.arc(-5 + eyeX, bodyTop + 6.6, 1.3, 0, 6.283); ctx.fill();
-
-    // bras
-    ctx.fillStyle = '#4ce0ff';
-    const armSwing = p.onGround ? Math.cos(p.runPhase) * 3 : -4;
-    rr(p.dir * 9 - 2, bodyTop + 17 + armSwing, 5.4, 10, 2.6); ctx.fill();
-
+    paintAvatar(ctx, sk, p, Game.time);
     ctx.restore();
     ctx.globalAlpha = 1;
 
@@ -2586,6 +2950,10 @@ const Render = (function () {
     toggleDebug() { debug = !debug; },
     get debug() { return debug; },
     setQuality,
+    SKINS,
+    setSkin(id) { if (SKINS.some(s => s.id === id)) skinId = id; },
+    getSkin: getSkin,
+    drawSkinPreview,
   };
 })();
 </script>
@@ -2605,7 +2973,9 @@ const UI = (function () {
 
   let save = {
     unlocked: 1, lastIdx: 0, best: {}, music: true, sfx: true, muted: false,
+    skin: 'nova',
   };
+  const maxStars = () => LEVELS.length * 3;
   let els = {};
   let touch = { left: false, right: false, jump: false, dash: false, pendingJump: false, pendingDash: false };
   const keys = {};
@@ -2642,7 +3012,7 @@ const UI = (function () {
 
   /* ---------------------------------------------------------- écrans */
   const SCREENS = {
-    menu: 'scr-menu', levels: 'scr-levels', intro: 'scr-intro',
+    menu: 'scr-menu', levels: 'scr-levels', skins: 'scr-skins', intro: 'scr-intro',
     pause: 'scr-pause', complete: 'scr-complete', ending: 'scr-ending',
   };
 
@@ -2654,6 +3024,7 @@ const UI = (function () {
     els.touch.classList.toggle('hidden', !(name === null || name === 'play' || name === 'pause') || !isTouch());
     if (name === 'menu') refreshMenu();
     if (name === 'levels') buildLevelCards();
+    if (name === 'skins') buildSkinCards();
   }
 
   function applyTheme() {
@@ -2667,7 +3038,9 @@ const UI = (function () {
 
   /* ---------------------------------------------------------- menu */
   function refreshMenu() {
-    els.menuStars.textContent = totalStars() + ' / 15';
+    els.menuStars.textContent = totalStars() + ' / ' + maxStars();
+    if (els.menuStarsLabel) els.menuStarsLabel.textContent = 'étoiles / ' + maxStars();
+    if (els.logoSub) els.logoSub.textContent = 'Un jeu de plateforme néon · ' + LEVELS.length + ' mondes · skins animés';
     els.menuGems.textContent = Object.values(save.best).reduce((a, b) => a + (b.gems || 0), 0);
     const done = Object.keys(save.best).length;
     let total = 0;
@@ -2678,7 +3051,7 @@ const UI = (function () {
     const target = save.best[next] ? Math.min(LEVELS.length - 1, next + 1) : next;
     save.lastIdx = target;
     const lv = LEVELS[target];
-    if (totalStars() === 15) {
+    if (totalStars() === maxStars()) {
       els.btnPlay.firstChild.textContent = 'REJOUER';
       els.btnPlaySub.textContent = 'Chasse aux records';
     } else if (save.unlocked > 1) {
@@ -2735,8 +3108,71 @@ const UI = (function () {
       els.levelGrid.appendChild(card);
     });
     const st = totalStars(), nd = Object.keys(save.best).length;
-    els.levelsSummary.textContent = st + ' étoile' + (st === 1 ? '' : 's') + ' sur 15 · ' +
-      nd + ' monde' + (nd === 1 ? '' : 's') + ' terminé' + (nd === 1 ? '' : 's');
+    els.levelsSummary.textContent = st + ' étoile' + (st === 1 ? '' : 's') + ' sur ' + maxStars() + ' · ' +
+      nd + ' monde' + (nd === 1 ? '' : 's') + ' terminé' + (nd === 1 ? '' : 's') +
+      ' · ' + LEVELS.length + ' mondes au total';
+  }
+
+  /* ---------------------------------------------------------- skins */
+  function isSkinUnlocked(sk) {
+    return sk.unlock == null || !!save.best[sk.unlock];
+  }
+
+  function buildSkinCards() {
+    els.skinGrid.innerHTML = '';
+    let owned = 0;
+    Render.SKINS.forEach(sk => {
+      const unlocked = isSkinUnlocked(sk);
+      if (unlocked) owned++;
+      const selected = save.skin === sk.id;
+      const card = document.createElement('button');
+      card.className = 'scard' + (selected ? ' selected' : '') + (unlocked ? '' : ' locked');
+      card.style.setProperty('--card-accent', sk.glow.replace(/rgba?\(([^)]+)\)/, (m, args) => {
+        const parts = args.split(',').map(s => s.trim());
+        return 'rgb(' + parts.slice(0, 3).join(',') + ')';
+      }));
+      const cv = document.createElement('canvas');
+      cv.width = 180; cv.height = 180;
+      Render.drawSkinPreview(cv, sk.id);
+      card.appendChild(cv);
+      const body = document.createElement('div');
+      body.className = 'sk-body';
+      body.innerHTML =
+        '<span class="sk-tag">' + sk.tag + '</span>' +
+        '<div class="sk-name">' + sk.name + '</div>';
+      card.appendChild(body);
+      if (selected) {
+        const eq = document.createElement('span');
+        eq.className = 'sk-equip';
+        eq.textContent = 'ÉQUIPÉ';
+        card.appendChild(eq);
+      }
+      if (!unlocked) {
+        card.disabled = true;
+        const lock = document.createElement('div');
+        lock.className = 'sk-lock';
+        lock.innerHTML =
+          '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="4" y="10" width="16" height="11" rx="2.5"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg>' +
+          '<span>Finis<br>' + LEVELS[sk.unlock].name + '</span>';
+        card.appendChild(lock);
+      }
+      card.addEventListener('click', () => {
+        if (!unlocked) {
+          toast('Termine « ' + LEVELS[sk.unlock].name + ' » pour débloquer ' + sk.name, 2600);
+          Sound.back();
+          return;
+        }
+        save.skin = sk.id;
+        Render.setSkin(sk.id);
+        writeSave();
+        Sound.ui();
+        buildSkinCards();
+      });
+      els.skinGrid.appendChild(card);
+    });
+    els.skinsSummary.textContent =
+      owned + ' skin' + (owned > 1 ? 's' : '') + ' débloqué' + (owned > 1 ? 's' : '') +
+      ' sur ' + Render.SKINS.length + ' · termine les mondes animés pour tous les avoir';
   }
 
   function drawThumb(cv, L, idx) {
@@ -2863,15 +3299,16 @@ const UI = (function () {
     Game.screen = 'ending';
     const vals = Object.values(save.best);
     const totTime = vals.reduce((a, b) => a + (b.time || 0), 0);
-    els.endStars.textContent = totalStars() + '/15';
+    els.endStars.textContent = totalStars() + '/' + maxStars();
     els.endTime.textContent = fmt(totTime);
     els.endCoins.textContent = vals.reduce((a, b) => a + (b.coins || 0), 0);
     els.endGems.textContent = vals.reduce((a, b) => a + (b.gems || 0), 0);
     els.endDeaths.textContent = vals.reduce((a, b) => a + (b.deaths || 0), 0);
+    if (els.endingSub) els.endingSub.textContent = 'Tu as traversé les ' + LEVELS.length + ' mondes. La lueur est sauve.';
     const quotes = [
       '« Cours vite, brille fort. »',
       '« La nuit n\'a rien vu venir. »',
-      '« Cinq mondes, une seule lueur. »',
+      '« ' + LEVELS.length + ' mondes, une seule lueur. »',
     ];
     els.endingQuote.textContent = quotes[Math.floor(Math.random() * quotes.length)];
     showScreen('ending');
@@ -2926,7 +3363,7 @@ const UI = (function () {
 
     if (k === 'Escape' || k === 'p') {
       if (Game.screen === 'play' || Game.screen === 'pause') { togglePause(); return; }
-      if (Game.screen === 'levels' || Game.screen === 'intro') { Sound.back(); Game.screen = 'menu'; showScreen('menu'); return; }
+      if (Game.screen === 'levels' || Game.screen === 'skins' || Game.screen === 'intro') { Sound.back(); Game.screen = 'menu'; showScreen('menu'); return; }
       if (Game.screen === 'complete') { Sound.back(); Game.screen = 'levels'; showScreen('levels'); return; }
     }
     if (k === 'r' && (Game.screen === 'play' || Game.screen === 'pause')) { restartLevel(); return; }
@@ -3106,8 +3543,10 @@ const UI = (function () {
   function cacheEls() {
     const ids = [
       'frame', 'hud', 'touch', 'toast', 'loading',
-      'menuStars', 'menuBest', 'menuGems', 'btnPlay', 'btnPlaySub', 'btnLevels', 'btnHow', 'btnReset',
+      'menuStars', 'menuStarsLabel', 'menuBest', 'menuGems', 'btnPlay', 'btnPlaySub',
+      'btnLevels', 'btnSkins', 'btnHow', 'btnReset', 'logoSub',
       'howto', 'btnSound', 'btnPause', 'levelGrid', 'levelsSummary', 'btnLevelsBack',
+      'skinGrid', 'skinsSummary', 'btnSkinsBack', 'endingSub',
       'introNum', 'introName', 'introSub', 'introHints', 'btnStart',
       'btnResume', 'btnRestart', 'btnPauseLevels', 'btnPauseMenu', 'optMusic', 'optSfx',
       'completeBadge', 'completeName', 'completeStars', 'statTime', 'statCoins', 'statGems', 'statDeaths',
@@ -3115,7 +3554,7 @@ const UI = (function () {
       'endStars', 'endTime', 'endCoins', 'endGems', 'endDeaths', 'endingQuote', 'btnEndReplay', 'btnEndLevels',
       'hudLevelNum', 'hudLevelName', 'hudTime', 'hudCoins', 'hudCoinsTotal', 'hudGems', 'hudGemsTotal',
       'hudDeaths', 'timePill', 'deathPill', 'progress', 'progressFill', 'progressDot',
-      'scr-menu', 'scr-levels', 'scr-intro', 'scr-pause', 'scr-complete', 'scr-ending',
+      'scr-menu', 'scr-levels', 'scr-skins', 'scr-intro', 'scr-pause', 'scr-complete', 'scr-ending',
     ];
     ids.forEach(id => { els[id] = document.getElementById(id); });
     els.levelChip = document.getElementById('levelChip');
@@ -3124,6 +3563,8 @@ const UI = (function () {
   function bind() {
     els.btnPlay.addEventListener('click', () => { Sound.unlock(); Sound.ui(); startLevelIntro(save.lastIdx); });
     els.btnLevels.addEventListener('click', () => { Sound.unlock(); Sound.ui(); Game.screen = 'levels'; showScreen('levels'); });
+    els.btnSkins.addEventListener('click', () => { Sound.unlock(); Sound.ui(); Game.screen = 'skins'; showScreen('skins'); });
+    els.btnSkinsBack.addEventListener('click', () => { Sound.back(); Game.screen = 'menu'; showScreen('menu'); });
     els.btnHow.addEventListener('click', () => { Sound.ui(); els.howto.classList.toggle('hidden'); });
     els.btnReset.addEventListener('click', () => {
       if (!resetArmed) {
@@ -3133,8 +3574,9 @@ const UI = (function () {
         setTimeout(() => { resetArmed = false; els.btnReset.textContent = 'EFFACER'; els.btnReset.classList.remove('danger'); }, 3200);
         Sound.ui();
       } else {
-        save = { unlocked: 1, lastIdx: 0, best: {}, music: save.music, sfx: save.sfx, muted: save.muted };
+        save = { unlocked: 1, lastIdx: 0, best: {}, music: save.music, sfx: save.sfx, muted: save.muted, skin: 'nova' };
         writeSave();
+        Render.setSkin('nova');
         refreshMenu(); buildLevelCards();
         els.btnReset.textContent = 'EFFACER'; els.btnReset.classList.remove('danger'); resetArmed = false;
         Sound.back();
@@ -3191,6 +3633,7 @@ const UI = (function () {
     resizeUi();
     Render.init();
     bind();
+    Render.setSkin(save.skin || 'nova');
     Sound.setMusic(save.music && !save.muted);
     Sound.setSfx(save.sfx && !save.muted);
     els.btnSound.classList.toggle('off', save.muted);
